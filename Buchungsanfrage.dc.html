@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail" data-bg-color="#142029">
+  <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+    <rect width="960" height="600" fill="#142029"/>
+    <rect x="80" y="80" width="800" height="440" rx="16" fill="#1e2e3a"/>
+    <rect x="120" y="120" width="340" height="360" rx="10" fill="#243444"/>
+    <rect x="140" y="150" width="80" height="12" rx="4" fill="#3b82d6"/>
+    <rect x="140" y="175" width="280" height="8" rx="3" fill="#2a4060" opacity=".8"/>
+    <rect x="140" y="195" width="280" height="8" rx="3" fill="#2a4060" opacity=".6"/>
+    <rect x="140" y="215" width="200" height="8" rx="3" fill="#2a4060" opacity=".4"/>
+    <rect x="140" y="250" width="280" height="180" rx="8" fill="#1a2d3f"/>
+    <rect x="480" y="120" width="360" height="360" rx="10" fill="#243444"/>
+    <rect x="500" y="145" width="120" height="10" rx="4" fill="#3b82d6"/>
+    <rect x="500" y="170" width="320" height="40" rx="6" fill="#1a2d3f"/>
+    <rect x="500" y="220" width="320" height="40" rx="6" fill="#1a2d3f"/>
+    <rect x="500" y="270" width="150" height="40" rx="6" fill="#1a2d3f"/>
+    <rect x="660" y="270" width="160" height="40" rx="6" fill="#1a2d3f"/>
+    <rect x="500" y="400" width="320" height="44" rx="10" fill="#3b82d6"/>
+    <text x="480" y="560" font-family="sans-serif" font-size="18" fill="#4a6a8a" text-anchor="middle">Kühlwagen-Verleih · Buchungsanfrage</text>
+  </svg>
+</template>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eef2f7; min-height: 100vh; font-family: 'Hanken Grotesk', sans-serif; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  input, textarea { font-family: 'Hanken Grotesk', sans-serif; }
+  input:focus, textarea:focus { outline: none; border-color: #3b82d6 !important; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/pocketbase/dist/pocketbase.umd.js"></script>
+</helmet>
+
+<!-- HEADER -->
+<div style="background:#142029;padding:16px 24px;display:flex;align-items:center;gap:14px">
+  <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,#3b82d6,#2c63b0);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0">❄</div>
+  <div>
+    <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px">Kühlwagen-Verleih</div>
+    <div style="font-size:12px;color:#7d8a97">Unverbindliche Buchungsanfrage</div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+<div style="max-width:560px;margin:60px auto;padding:0 20px;text-align:center;animation:fadeIn .4s">
+  <div style="width:72px;height:72px;border-radius:50%;background:#e7f5ee;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:36px;color:#2f9e6a">✓</div>
+  <h2 style="font-size:24px;font-weight:800;color:#142029;margin:0 0 12px">Anfrage gesendet!</h2>
+  <p style="color:#5a6675;font-size:15px;line-height:1.7;margin:0 0 28px">Wir haben Ihre Anfrage erhalten und melden uns schnellstmöglich per E-Mail bei Ihnen.</p>
+  <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:20px;text-align:left">
+    <div style="font-size:11px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">Ihre Anfrage</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><div style="font-size:11px;color:#9aa6b2;margin-bottom:2px">Zeitraum</div><div style="font-size:14px;font-weight:700;color:#1b2733;font-family:'DM Mono',monospace">{{ successVon }} – {{ successBis }}</div></div>
+      <div><div style="font-size:11px;color:#9aa6b2;margin-bottom:2px">Name</div><div style="font-size:14px;font-weight:700;color:#1b2733">{{ successName }}</div></div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<!-- MAIN CONTENT -->
+<sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:960px;margin:0 auto;padding:28px 20px 60px">
+
+  <!-- Intro -->
+  <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+    <div style="width:36px;height:36px;border-radius:10px;background:#e9f1fb;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3b82d6" stroke-width="1.7"><circle cx="10" cy="10" r="7.5"/><line x1="10" y1="9" x2="10" y2="14"/><circle cx="10" cy="6.5" r=".8" fill="#3b82d6" stroke="none"/></svg>
+    </div>
+    <div style="font-size:13.5px;color:#3a4854;line-height:1.6">Wählen Sie im Kalender Ihren gewünschten Zeitraum — <strong style="color:#142029">grüne Tage sind verfügbar</strong>. Füllen Sie dann das Formular aus und schicken Sie Ihre Anfrage ab.</div>
+  </div>
+
+  <!-- CALENDAR CARD -->
+  <div style="background:#fff;border:1px solid #e6eaef;border-radius:16px;padding:24px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <button onClick="{{ prevCal }}" style-hover="background:#eef2f7" style="width:36px;height:36px;border-radius:9px;border:1px solid #e6eaef;background:#f6f8fb;cursor:pointer;font-size:18px;color:#3a4854;display:flex;align-items:center;justify-content:center;line-height:1">‹</button>
+      <div style="font-size:16px;font-weight:700;color:#142029">{{ calHeader }}</div>
+      <button onClick="{{ nextCal }}" style-hover="background:#eef2f7" style="width:36px;height:36px;border-radius:9px;border:1px solid #e6eaef;background:#f6f8fb;cursor:pointer;font-size:18px;color:#3a4854;display:flex;align-items:center;justify-content:center;line-height:1">›</button>
+    </div>
+
+    <!-- Weekday labels -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px">
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#9aa6b2;padding:4px">Mo</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#9aa6b2;padding:4px">Di</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#9aa6b2;padding:4px">Mi</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#9aa6b2;padding:4px">Do</div>
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#9aa6b2;padding:4px">Fr</div>
+      <div style="text-align:center;font-size:11px;font-weight:600;color:#b0b8c4;padding:4px">Sa</div>
+      <div style="text-align:center;font-size:11px;font-weight:600;color:#b0b8c4;padding:4px">So</div>
+    </div>
+
+    <!-- Day grid -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      <sc-for list="{{ calDays }}" as="cell" hint-placeholder-count="35">
+        <div onClick="{{ cell.onClick }}" style="text-align:center;padding:7px 2px;border-radius:9px;font-size:13.5px;font-weight:{{ cell.fw }};background:{{ cell.bg }};color:{{ cell.color }};cursor:{{ cell.cursor }};border:{{ cell.border }};opacity:{{ cell.opacity }};min-height:36px;display:flex;align-items:center;justify-content:center;transition:filter .1s" style-hover="{{ cell.hoverStyle }}">{{ cell.label }}</div>
+      </sc-for>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;align-items:center;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f2f5;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#f0f9f4;border:1px solid #b8dfcb"></div>Verfügbar</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#fbecec;border:1px solid #e8bcbb"></div>Belegt</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#3b82d6"></div>Ausgewählt</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#e9f1fb;border:1px solid #c8d9f0"></div>Zeitraum</div>
+    </div>
+  </div>
+
+  <!-- Date range indicator -->
+  <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+  <div style="background:#e9f1fb;border:1px solid #c8d9f0;border-radius:12px;padding:13px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:14px;animation:fadeIn .2s">
+    <div style="display:flex;align-items:center;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#3b82d6" stroke-width="1.7"><rect x="3" y="4.5" width="14" height="12.5" rx="2"/><line x1="3" y1="8.5" x2="17" y2="8.5"/><line x1="7" y1="2.5" x2="7" y2="6"/><line x1="13" y1="2.5" x2="13" y2="6"/></svg>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#1b5fb8">{{ selLabel }}</div>
+        <div style="font-size:12px;color:#4a7ab8;margin-top:1px">{{ selHint }}</div>
+      </div>
+    </div>
+    <button onClick="{{ clearSel }}" style-hover="background:#d8e8f8" style="background:rgba(59,130,214,.15);border:none;border-radius:8px;padding:6px 12px;font-family:'Hanken Grotesk',sans-serif;font-size:12px;font-weight:600;color:#1b5fb8;cursor:pointer">✕ Zurücksetzen</button>
+  </div>
+  </sc-if>
+
+  <!-- FORM CARD -->
+  <div style="background:#fff;border:1px solid #e6eaef;border-radius:16px;padding:28px">
+    <div style="font-size:17px;font-weight:800;color:#142029;margin-bottom:4px">Ihre Anfrage</div>
+    <div style="font-size:13px;color:#8a96a3;margin-bottom:24px">Felder mit * sind Pflichtfelder. Wir antworten innerhalb von 24 Stunden.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Name *</label>
+        <input value="{{ form.name }}" onInput="{{ onName }}" type="text" placeholder="Vor- und Nachname" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Firma <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
+        <input value="{{ form.company }}" onInput="{{ onCompany }}" type="text" placeholder="Firmenname" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">E-Mail *</label>
+        <input value="{{ form.email }}" onInput="{{ onEmail }}" type="email" placeholder="ihre@email.at" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Telefon <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
+        <input value="{{ form.phone }}" onInput="{{ onPhone }}" type="tel" placeholder="0664 ..." style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Von (Datum) *</label>
+        <input value="{{ form.fromDate }}" onInput="{{ onFromDate }}" type="date" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Bis (Datum) *</label>
+        <input value="{{ form.toDate }}" onInput="{{ onToDate }}" type="date" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div style="grid-column:span 2">
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Verwendungszweck <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
+        <input value="{{ form.purpose }}" onInput="{{ onPurpose }}" type="text" placeholder="z.B. Hochzeit, Vereinsfest, Catering, Firmenfeier …" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+      </div>
+      <div style="grid-column:span 2">
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Nachricht <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
+        <textarea value="{{ form.message }}" onInput="{{ onMessage }}" placeholder="Weitere Informationen oder Fragen …" rows="3" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;resize:vertical;transition:border-color .12s"></textarea>
+      </div>
+    </div>
+
+    <div style="display:{{ errorDisplay }};background:#fbecec;border:1px solid #e8bcbb;border-radius:9px;padding:11px 14px;margin-top:16px;font-size:13px;color:#9a3b38">{{ errorMsg }}</div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid #f0f2f5">
+      <div style="font-size:12px;color:#9aa6b2">Ihre Daten werden vertraulich behandelt.</div>
+      <button onClick="{{ submitForm }}" style-hover="background:#2c63b0" style="background:#3b82d6;color:#fff;border:none;border-radius:11px;padding:13px 28px;font-size:14.5px;font-weight:700;cursor:pointer;transition:background .12s">{{ submitLabel }}</button>
+    </div>
+  </div>
+
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:700},&quot;pbUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://kw.hofreither.at&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Konfiguration&quot;}}">
+class Component extends DCLogic {
+  PB_URL = 'https://kw.hofreither.at';
+  MONTHS = ['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+  state = {
+    calYear: new Date().getFullYear(),
+    calMonth: new Date().getMonth() + 1,
+    busyRanges: [],
+    selFrom: null,
+    selTo: null,
+    form: { name:'', email:'', phone:'', company:'', fromDate:'', toDate:'', purpose:'', message:'' },
+    submitted: false,
+    submitting: false,
+    errorMsg: '',
+    successName: '', successVon: '', successBis: ''
+  };
+
+  componentDidMount() {
+    this.loadBusyDates();
+  }
+
+  loadBusyDates() {
+    const url = (this.props.pbUrl || this.PB_URL) + '/api/collections/kw_calendar/records?perPage=1';
+    fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if (data.items && data.items.length > 0 && Array.isArray(data.items[0].data)) {
+          this.setState({ busyRanges: data.items[0].data });
+        }
+      })
+      .catch(() => {});
+  }
+
+  today() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  fmtDate(s) { if(!s) return ''; const [y,m,d] = s.split('-'); return d+'.'+m+'.'+y.slice(2); }
+
+  isDateBusy(dateStr) {
+    return this.state.busyRanges.some(r => dateStr >= (r.from||r.von||'') && dateStr <= (r.to||r.bis||''));
+  }
+
+  buildCalDays(year, month) {
+    const tod = this.today();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const firstWeekday = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+    const s = this.state;
+    const cells = [];
+
+    for (let i = 0; i < firstWeekday; i++) {
+      cells.push({ key:'e'+i, label:'', bg:'transparent', color:'transparent', cursor:'default', fw:'400', border:'none', opacity:'1', onClick:null, hoverStyle:'' });
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      const isBusy = this.isDateBusy(dateStr);
+      const isPast = dateStr < tod;
+      const isToday = dateStr === tod;
+      const isStart = dateStr === s.selFrom;
+      const isEnd = dateStr === s.selTo;
+      const isInRange = s.selFrom && s.selTo && dateStr > s.selFrom && dateStr < s.selTo;
+      const disabled = isPast || isBusy;
+
+      let bg, color, border = '1px solid transparent', hoverStyle = '';
+      if (isStart || isEnd) { bg = '#3b82d6'; color = '#fff'; }
+      else if (isInRange) { bg = '#e9f1fb'; color = '#1b5fb8'; }
+      else if (isBusy) { bg = '#fbecec'; color = '#c25450'; }
+      else if (isPast) { bg = '#f6f8fb'; color = '#c8d0d8'; }
+      else { bg = '#f0f9f4'; color = '#1d6e48'; hoverStyle = 'filter:brightness(.94)'; }
+
+      if (isToday && !isStart && !isEnd) border = '2px solid #3b82d6';
+
+      cells.push({
+        key: dateStr,
+        label: String(d),
+        bg, color,
+        cursor: disabled ? 'default' : 'pointer',
+        fw: (isStart || isEnd) ? '700' : '500',
+        border,
+        opacity: isPast ? '0.45' : '1',
+        hoverStyle,
+        onClick: disabled ? null : () => this.selectDate(dateStr)
+      });
+    }
+    return cells;
+  }
+
+  selectDate(dateStr) {
+    const s = this.state;
+    if (!s.selFrom || (s.selFrom && s.selTo) || dateStr < s.selFrom) {
+      this.setState({ selFrom: dateStr, selTo: null, form: { ...s.form, fromDate: dateStr, toDate: '' } });
+    } else {
+      this.setState({ selTo: dateStr, form: { ...s.form, toDate: dateStr } });
+    }
+  }
+
+  prevCal() {
+    let { calYear, calMonth } = this.state;
+    calMonth--;
+    if (calMonth < 1) { calMonth = 12; calYear--; }
+    this.setState({ calYear, calMonth });
+  }
+
+  nextCal() {
+    let { calYear, calMonth } = this.state;
+    calMonth++;
+    if (calMonth > 12) { calMonth = 1; calYear++; }
+    this.setState({ calYear, calMonth });
+  }
+
+  clearSel() {
+    this.setState({ selFrom: null, selTo: null, form: { ...this.state.form, fromDate: '', toDate: '' } });
+  }
+
+  submitForm() {
+    const s = this.state;
+    const f = s.form;
+    if (!f.name.trim()) { this.setState({ errorMsg: 'Bitte geben Sie Ihren Namen ein.' }); return; }
+    if (!f.email.trim() || !f.email.includes('@')) { this.setState({ errorMsg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }); return; }
+    if (!f.fromDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Startdatum (im Kalender oder im Feld „Von").' }); return; }
+    if (!f.toDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Enddatum (im Kalender oder im Feld „Bis").' }); return; }
+    if (f.toDate < f.fromDate) { this.setState({ errorMsg: 'Das Enddatum muss nach dem Startdatum liegen.' }); return; }
+    if (!window.PocketBase) { this.setState({ errorMsg: 'Verbindungsfehler. Bitte Seite neu laden.' }); return; }
+
+    this.setState({ submitting: true, errorMsg: '' });
+    const pb = new window.PocketBase(this.props.pbUrl || this.PB_URL);
+    pb.collection('kw_booking_requests').create({
+      name: f.name, email: f.email, phone: f.phone, company: f.company,
+      from_date: f.fromDate, to_date: f.toDate,
+      purpose: f.purpose, message: f.message, status: 'pending'
+    }).then(() => {
+      this.setState({ submitted: true, submitting: false, successName: f.name, successVon: this.fmtDate(f.fromDate), successBis: this.fmtDate(f.toDate) });
+    }).catch(() => {
+      this.setState({ submitting: false, errorMsg: 'Fehler beim Senden. Bitte versuchen Sie es erneut.' });
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const calDays = this.buildCalDays(s.calYear, s.calMonth);
+
+    let selLabel = '', selHint = '';
+    if (s.selFrom && s.selTo) {
+      selLabel = this.fmtDate(s.selFrom) + ' bis ' + this.fmtDate(s.selTo);
+      selHint = 'Klicken Sie auf ein Datum um neu zu beginnen';
+    } else if (s.selFrom) {
+      selLabel = 'Start: ' + this.fmtDate(s.selFrom);
+      selHint = 'Bitte Enddatum im Kalender wählen';
+    }
+
+    return {
+      calDays,
+      calHeader: this.MONTHS[s.calMonth - 1] + ' ' + s.calYear,
+      prevCal: () => this.prevCal(),
+      nextCal: () => this.nextCal(),
+      hasSelection: !!s.selFrom,
+      selLabel, selHint,
+      clearSel: () => this.clearSel(),
+      submitted: s.submitted,
+      notSubmitted: !s.submitted,
+      successName: s.successName,
+      successVon: s.successVon,
+      successBis: s.successBis,
+      form: s.form,
+      onName: e => this.setState({ form: { ...s.form, name: e.target.value } }),
+      onEmail: e => this.setState({ form: { ...s.form, email: e.target.value } }),
+      onPhone: e => this.setState({ form: { ...s.form, phone: e.target.value } }),
+      onCompany: e => this.setState({ form: { ...s.form, company: e.target.value } }),
+      onFromDate: e => { const v = e.target.value; this.setState({ form: { ...s.form, fromDate: v }, selFrom: v || null, selTo: v ? s.selTo : null }); },
+      onToDate: e => { const v = e.target.value; this.setState({ form: { ...s.form, toDate: v }, selTo: v || null }); },
+      onPurpose: e => this.setState({ form: { ...s.form, purpose: e.target.value } }),
+      onMessage: e => this.setState({ form: { ...s.form, message: e.target.value } }),
+      errorMsg: s.errorMsg,
+      errorDisplay: s.errorMsg ? 'block' : 'none',
+      submitLabel: s.submitting ? 'Wird gesendet …' : 'Anfrage absenden →',
+      submitForm: () => this.submitForm()
+    };
+  }
+}
+</script>
+</body>
+</html>

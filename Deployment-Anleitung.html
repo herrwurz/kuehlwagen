@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deployment-Anleitung – Kühlwagen-Verwaltung</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Hanken Grotesk', sans-serif; background: #f0f4f8; color: #1b2733; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -.5px; margin: 0 0 4px; }
+  h2 { font-size: 18px; font-weight: 700; margin: 36px 0 14px; color: #142029; display: flex; align-items: center; gap: 10px; }
+  h2 .num { width: 28px; height: 28px; border-radius: 50%; background: #3b82d6; color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  h3 { font-size: 14px; font-weight: 700; margin: 20px 0 8px; color: #3a4854; }
+  p, li { font-size: 14px; line-height: 1.7; color: #3a4854; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin-bottom: 4px; }
+  .card { background: #fff; border: 1px solid #e6eaef; border-radius: 14px; padding: 22px 24px; margin-bottom: 16px; }
+  .card.blue { border-left: 4px solid #3b82d6; }
+  .card.green { border-left: 4px solid #2f9e6a; }
+  .card.orange { border-left: 4px solid #d98a2b; }
+  .card.red { border-left: 4px solid #c25450; }
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: #f0f4f8; padding: 2px 7px; border-radius: 5px; color: #1b5fb8; }
+  pre { font-family: 'DM Mono', monospace; font-size: 13px; background: #142029; color: #c8d6e2; padding: 16px 20px; border-radius: 10px; overflow-x: auto; line-height: 1.6; margin: 10px 0; }
+  pre .c { color: #5a7a8a; }
+  pre .k { color: #7ec8e3; }
+  pre .s { color: #a8e6a3; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .badge.blue { background: #e9f1fb; color: #1b5fb8; }
+  .badge.green { background: #e7f5ee; color: #1d6e48; }
+  .badge.orange { background: #fdf3e6; color: #8a5a16; }
+  .hero { background: linear-gradient(150deg, #142029, #1f3a4e); border-radius: 16px; padding: 28px 32px; margin-bottom: 32px; color: #fff; }
+  .hero .sub { font-size: 13.5px; color: #7d9aac; margin-top: 6px; }
+  .arch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+  .arch-box { background: #f6f8fb; border: 1px solid #e6eaef; border-radius: 10px; padding: 14px; text-align: center; }
+  .arch-box .label { font-size: 12px; font-weight: 600; color: #5a6675; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+  .arch-box .val { font-size: 13.5px; font-weight: 700; color: #1b2733; }
+  .arch-box .note { font-size: 11.5px; color: #8a96a3; margin-top: 3px; }
+  .step { display: flex; gap: 14px; margin-bottom: 14px; }
+  .step .dot { width: 24px; height: 24px; border-radius: 50%; background: #e9f1fb; color: #1b5fb8; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step .body { flex: 1; }
+  .step .body strong { font-size: 14px; font-weight: 700; display: block; margin-bottom: 3px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 14px; background: #f6f8fb; font-weight: 600; color: #5a6675; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid #e6eaef; }
+  td { padding: 12px 14px; border-bottom: 1px solid #f2f4f7; vertical-align: top; }
+  .tip { background: #f0f5fc; border: 1px solid #c8d9f0; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #1b5fb8; margin: 12px 0; }
+  .warn { background: #fff7f0; border: 1px solid #f5c49a; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #8a5a16; margin: 12px 0; }
+  @media print { body { background: #fff; } .page { padding: 24px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(59,130,214,.3);display:flex;align-items:center;justify-content:center;font-size:24px">❄</div>
+      <div>
+        <h1 style="color:#fff;margin:0">Deployment-Anleitung</h1>
+        <div class="sub">Kühlwagen-Verwaltung · PocketBase + Coolify + Hetzner</div>
+      </div>
+    </div>
+    <div class="arch">
+      <div class="arch-box">
+        <div class="label">Hosting</div>
+        <div class="val">Hetzner</div>
+        <div class="note">CAX11 · ~4 €/Mo</div>
+      </div>
+      <div class="arch-box">
+        <div class="label">Deployment</div>
+        <div class="val">Coolify</div>
+        <div class="note">SSL, Updates, GUI</div>
+      </div>
+      <div class="arch-box">
+        <div class="label">Backend + DB</div>
+        <div class="val">PocketBase</div>
+        <div class="note">Single Binary · SQLite</div>
+      </div>
+    </div>
+    <p style="color:#a8bfcc;font-size:13px;margin:10px 0 0">Frontend-HTML wird direkt aus PocketBase's <code style="background:rgba(255,255,255,.1);color:#7ec8e3">pb_public/</code> Ordner ausgeliefert — kein separater Webserver nötig.</p>
+  </div>
+
+  <!-- SCHRITT 1: PocketBase in Coolify -->
+  <h2><span class="num">1</span> PocketBase in Coolify deployen</h2>
+  <div class="card blue">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>Neuen Service anlegen</strong>
+        Coolify Dashboard → <em>New Resource</em> → <em>Docker Image</em>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Image konfigurieren</strong>
+        <pre>Image:    <span class="s">ghcr.io/muchobien/pocketbase:latest</span>
+Port:     <span class="k">8090</span>
+</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>Persistentes Volume anlegen</strong>
+        <pre>Source:       <span class="s">pb_data</span>   <span class="c">(persistent volume)</span>
+Destination:  <span class="s">/pb/pb_data</span>
+</pre>
+        <span class="warn">Ohne dieses Volume gehen alle Daten beim Neustart verloren!</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="body">
+        <strong>Domain zuweisen</strong>
+        Z.B. <code>kw.hofreither.at</code> — Coolify übernimmt SSL automatisch (Let's Encrypt).
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">5</div>
+      <div class="body">
+        <strong>Deployen</strong>
+        Auf <em>Deploy</em> klicken. Nach ~1 Minute ist PocketBase unter<br>
+        <code>https://kw.hofreither.at/_/</code> erreichbar.
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHRITT 2: PocketBase einrichten -->
+  <h2><span class="num">2</span> PocketBase Admin einrichten</h2>
+  <div class="card green">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>Admin-Account erstellen</strong>
+        <code>https://kw.hofreither.at/_/</code> aufrufen → Admin-E-Mail und Passwort vergeben.
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Collection <code>kw_state</code> erstellen</strong>
+        <em>Collections</em> → <em>New collection</em>
+        <table style="margin-top:10px">
+          <tr><th>Name</th><th>Typ</th><th>Pflicht</th></tr>
+          <tr><td><code>data</code></td><td>JSON</td><td>nein</td></tr>
+        </table>
+        <p style="margin-top:10px">API-Rules (alle 4 Felder):</p>
+        <pre><span class="c"># Nur eingeloggte Nutzer dürfen lesen/schreiben:</span>
+@request.auth.id != <span class="s">""</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>Benutzer anlegen</strong>
+        <em>Users</em> → <em>New record</em> — für jede Dame einen Account:<br><br>
+        <table>
+          <tr><th>Name</th><th>E-Mail</th><th>Passwort</th></tr>
+          <tr><td>Dame 1</td><td><code>dame1@hofreither.at</code></td><td><em>(sicher wählen)</em></td></tr>
+          <tr><td>Dame 2</td><td><code>dame2@hofreither.at</code></td><td><em>(sicher wählen)</em></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHRITT 3: Frontend deployen -->
+  <h2><span class="num">3</span> Frontend in PocketBase ablegen</h2>
+  <div class="card blue">
+    <p>Das Frontend wird als <code>index.html</code> direkt im PocketBase-Container abgelegt. So läuft alles unter einer einzigen Domain — kein zweiter Service nötig.</p>
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>Standalone-HTML vorbereiten</strong>
+        Die Datei <code>Kühlwagen-Verwaltung-standalone.html</code> zu <code>index.html</code> umbenennen.
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Datei in den Container kopieren</strong>
+        Über Coolify → Terminal des laufenden Containers, oder via SSH + Docker:
+        <pre><span class="c"># Container-ID herausfinden:</span>
+docker ps | grep pocketbase
+
+<span class="c"># HTML in pb_public kopieren:</span>
+docker cp index.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/index.html</pre>
+        <div class="tip">Alternativ: In Coolify unter <em>File Manager</em> direkt hochladen, falls verfügbar.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>Fertig! App aufrufen:</strong>
+        <code>https://kw.hofreither.at/index.html</code><br>
+        Login-Maske erscheint → mit den angelegten Benutzer-Accounts anmelden.
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHRITT 4: Updates einspielen -->
+  <h2><span class="num">4</span> Updates einspielen</h2>
+  <div class="card orange">
+    <p>Wenn du eine neue Version der App entwickelt hast:</p>
+    <ol>
+      <li>In diesem Projekt <strong>standalone HTML neu generieren</strong> (super_inline_html)</li>
+      <li>Zu <code>index.html</code> umbenennen</li>
+      <li>Per <code>docker cp</code> in den Container kopieren (Schritt 3.2)</li>
+      <li>Fertig — die Damen sehen die neue Version beim nächsten Browser-Reload</li>
+    </ol>
+    <div class="tip">Optional: GitHub Actions kann den Copy-Schritt automatisieren — dann reicht ein <code>git push</code>.</div>
+  </div>
+
+  <!-- SCHRITT 5: Datensicherung -->
+  <h2><span class="num">5</span> Datensicherung</h2>
+  <div class="card green">
+    <h3>Automatisches Backup (empfohlen)</h3>
+    <p>PocketBase hat ein eingebautes Backup-System:</p>
+    <pre><span class="c"># In pb_hooks oder via Admin UI:</span>
+Admin → Settings → Backups → Schedule: <span class="s">"täglich 03:00"</span></pre>
+    <h3>Manuelles Backup</h3>
+    <p>Das gesamte Datenvolume (<code>/pb/pb_data</code>) enthält die SQLite-Datenbank. Einfach kopieren:</p>
+    <pre>docker cp <span class="k">&lt;container-id&gt;</span>:/pb/pb_data ./backup-$(date +%Y%m%d)</pre>
+    <h3>App-internes Backup</h3>
+    <p>Die Damen können jederzeit über <strong>Stammdaten → Backup exportieren</strong> eine JSON-Datei herunterladen und lokal aufbewahren.</p>
+  </div>
+
+  <!-- ÜBERSICHT -->
+  <h2><span class="num">6</span> Wichtige URLs und Zugangsdaten</h2>
+  <div class="card">
+    <table>
+      <tr><th>Was</th><th>URL / Wert</th></tr>
+      <tr><td><strong>App für Damen</strong></td><td><code>https://kw.hofreither.at/index.html</code></td></tr>
+      <tr><td><strong>PocketBase Admin</strong></td><td><code>https://kw.hofreither.at/_/</code></td></tr>
+      <tr><td><strong>Coolify Dashboard</strong></td><td><code>https://app.coolify.io</code> (oder selbst gehostet)</td></tr>
+      <tr><td><strong>Hetzner Console</strong></td><td><code>https://console.hetzner.cloud</code></td></tr>
+      <tr><td><strong>PocketBase Collection</strong></td><td><code>kw_state</code> mit Feld <code>data</code> (JSON)</td></tr>
+    </table>
+  </div>
+
+  <div class="warn" style="margin-top:24px">
+    <strong>Hinweis Gleichzeitiger Zugriff:</strong> Wenn beide Damen gleichzeitig Buchungen anlegen und kurz danach speichern, gewinnt die letzte Speicherung. Bei zwei Personen im Alltag ist das kein Problem — für echte Echtzeitsynchronisation könnte man PocketBase-Subscriptions ergänzen.
+  </div>
+
+  <!-- SCHRITT 6: Collections für Buchungsanfragen -->
+  <h2><span class="num">6</span> Collections für Online-Buchungsanfragen</h2>
+  <div class="card blue">
+    <p>Zwei neue Collections in PocketBase anlegen (<code>kw.hofreither.at/_/</code> → Collections):</p>
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>Collection <code>kw_booking_requests</code></strong>
+        Felder:
+        <table style="margin-top:10px">
+          <tr><th>Name</th><th>Typ</th></tr>
+          <tr><td><code>name</code></td><td>Text</td></tr>
+          <tr><td><code>email</code></td><td>Text</td></tr>
+          <tr><td><code>phone</code></td><td>Text</td></tr>
+          <tr><td><code>company</code></td><td>Text</td></tr>
+          <tr><td><code>from_date</code></td><td>Text</td></tr>
+          <tr><td><code>to_date</code></td><td>Text</td></tr>
+          <tr><td><code>purpose</code></td><td>Text</td></tr>
+          <tr><td><code>message</code></td><td>Text</td></tr>
+          <tr><td><code>status</code></td><td>Text (Default: <code>pending</code>)</td></tr>
+          <tr><td><code>rejection_note</code></td><td>Text</td></tr>
+        </table>
+        <p style="margin-top:10px"><strong>API Rules:</strong></p>
+        <pre><span class="c"># Create = öffentlich (für Besucher der Buchungsseite):</span>
+List/View/Update/Delete: <span class="s">@request.auth.id != ""</span>
+Create:                  <span class="c">(leer lassen = öffentlich)</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Collection <code>kw_calendar</code></strong>
+        Felder: <code>data</code> → Typ <strong>JSON</strong>
+        <p style="margin-top:10px"><strong>API Rules:</strong></p>
+        <pre><span class="c"># List/View = öffentlich (für Verfügbarkeitskalender):</span>
+List/View:               <span class="c">(leer lassen = öffentlich)</span>
+Create/Update/Delete:    <span class="s">@request.auth.id != ""</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHRITT 7: E-Mail / SMTP -->
+  <h2><span class="num">7</span> E-Mail-Benachrichtigungen einrichten</h2>
+  <div class="card green">
+    <h3>SMTP-Anbieter: Brevo (empfohlen)</h3>
+    <p>Brevo ist kostenlos (300 Mails/Tag), braucht keine Server-Installation — nur Zugangsdaten konfigurieren.</p>
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body"><strong>Account erstellen</strong><br>Kostenlos registrieren auf <code>brevo.com</code> → E-Mail-Adresse bestätigen</div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body"><strong>SMTP-Zugangsdaten holen</strong><br>Brevo Dashboard → <em>SMTP &amp; API</em> → Tab <em>SMTP</em> → Daten notieren:<br><code>Host, Port (587), Login, Passwort</code></div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>In PocketBase konfigurieren</strong><br>
+        <code>kw.hofreither.at/_/</code> → Settings → Mail settings:
+        <table style="margin-top:10px">
+          <tr><th>Feld</th><th>Wert</th></tr>
+          <tr><td>SMTP Host</td><td><code>smtp-relay.brevo.com</code></td></tr>
+          <tr><td>SMTP Port</td><td><code>587</code></td></tr>
+          <tr><td>Username</td><td>Deine Brevo-E-Mail</td></tr>
+          <tr><td>Password</td><td>Brevo SMTP-Passwort</td></tr>
+          <tr><td>Sender Address</td><td><code>buchung@hofreither.at</code></td></tr>
+          <tr><td>Sender Name</td><td><code>Kühlwagen-Verleih Hofreither</code></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="body">
+        <strong>Hook-Datei in den Container kopieren</strong>
+        <pre><span class="c"># Datei pb_hooks/kw_anfragen.pb.js auf Server hochladen:</span>
+docker cp kw_anfragen.pb.js <span class="k">&lt;container-id&gt;</span>:/pb/pb_hooks/kw_anfragen.pb.js
+
+<span class="c"># Container neu starten damit Hooks geladen werden:</span>
+docker restart <span class="k">&lt;container-id&gt;</span></pre>
+        <div class="tip">Die Hook-Datei liegt im Projekt unter <code>pb_hooks/kw_anfragen.pb.js</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHRITT 8: Buchungsseite deployen -->
+  <h2><span class="num">8</span> Öffentliche Buchungsseite</h2>
+  <div class="card blue">
+    <p>Die Datei <code>Buchungsanfrage-standalone.html</code> (standalone-Version der Buchungsseite) als <code>buchung.html</code> in <code>pb_public</code> ablegen — analog zu Schritt 3.</p>
+    <pre><span class="c"># Auf dem Server:</span>
+docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/buchung.html</pre>
+    <div class="tip">Dann erreichbar unter <code>https://kw.hofreither.at/buchung.html</code></div>
+    <h3>Auf valentinum.at einbetten (iframe)</h3>
+    <pre>&lt;iframe
+  src="https://kw.hofreither.at/buchung.html"
+  width="100%"
+  height="800"
+  frameborder="0"
+  style="border-radius:12px"&gt;
+&lt;/iframe&gt;</pre>
+  </div>
+
+  <!-- WICHTIGE URLs UPDATE -->
+  <h2><span class="num">9</span> Wichtige URLs und Zugangsdaten</h2>
+  <div class="card">
+    <table>
+      <tr><th>Was</th><th>URL / Wert</th></tr>
+      <tr><td><strong>App für Mitarbeiter</strong></td><td><code>https://kw.hofreither.at/index.html</code></td></tr>
+      <tr><td><strong>Buchungsseite (öffentlich)</strong></td><td><code>https://kw.hofreither.at/buchung.html</code></td></tr>
+      <tr><td><strong>PocketBase Admin</strong></td><td><code>https://kw.hofreither.at/_/</code></td></tr>
+      <tr><td><strong>Coolify Dashboard</strong></td><td><code>https://app.coolify.io</code></td></tr>
+      <tr><td><strong>Hetzner Console</strong></td><td><code>https://console.hetzner.cloud</code></td></tr>
+      <tr><td><strong>SMTP (Brevo)</strong></td><td><code>smtp-relay.brevo.com:587</code></td></tr>
+    </table>
+  </div>
+
+  <p style="margin-top:32px;font-size:12.5px;color:#9aa6b2;text-align:center">Hofreither · Kühlwagen-Verleih · Deployment-Anleitung v2.0</p>
+</div>
+</body>
+</html>
