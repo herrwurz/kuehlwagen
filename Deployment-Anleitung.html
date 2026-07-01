@@ -357,7 +357,63 @@ docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public
     </table>
   </div>
 
-  <p style="margin-top:32px;font-size:12.5px;color:#9aa6b2;text-align:center">Hofreither · Kühlwagen-Verleih · Deployment-Anleitung v2.0</p>
+  <!-- SCHRITT 10: Git-Workflow -->
+  <h2><span class="num">10</span> Git-Workflow &amp; Deploy</h2>
+  <div class="card green">
+    <h3>Repo-Struktur</h3>
+    <table>
+      <tr><th>Branch</th><th>Zweck</th></tr>
+      <tr><td><code>main</code></td><td>Produktivversion — was auf dem Server läuft</td></tr>
+      <tr><td><code>dev</code></td><td>Entwicklung — hier werden Änderungen gemacht</td></tr>
+    </table>
+
+    <h3>Änderung entwickeln (Standard-Workflow)</h3>
+    <pre><span class="c"># 1. Auf dev-Branch wechseln</span>
+git checkout dev
+
+<span class="c"># 2. Änderungen in Claude.ai machen
+#    → Standalone HTMLs exportieren
+#    → Dateien in lokalen kuehlwagen-Ordner legen</span>
+
+<span class="c"># 3. Ins Git committen</span>
+git add .
+git commit -m <span class="s">"Beschreibung der Änderung"</span>
+git push</pre>
+
+    <h3>Auf Produktion deployen</h3>
+    <pre><span class="c"># Deploy-Script ausführen (macht alles automatisch):</span>
+.\deploy.ps1
+
+<span class="c"># Das Script macht:</span>
+<span class="c"># 1. dev → main mergen und pushen</span>
+<span class="c"># 2. Standalone HTMLs per SCP auf Server</span>
+<span class="c"># 3. Dateien in PocketBase Container kopieren</span></pre>
+
+    <h3>Voraussetzungen für deploy.ps1</h3>
+    <ul style="margin:10px 0;padding-left:20px;line-height:2">
+      <li>SSH-Zugang funktioniert: <code>ssh root@116.203.141.156</code></li>
+      <li>Standalone HTMLs liegen im Ordner:<br>
+        <code>Kuehlwagen-Verwaltung-standalone.html</code><br>
+        <code>Buchungsanfrage-standalone.html</code>
+      </li>
+      <li>Script liegt im Repo-Root: <code>deploy.ps1</code></li>
+    </ul>
+
+    <h3>Standalone HTMLs generieren</h3>
+    <p>In Claude.ai (<code>claude.ai</code>) → Projekt "Kühlwagen-Verwaltungssystem":</p>
+    <ol style="margin:10px 0;padding-left:20px;line-height:2">
+      <li>Änderungen besprechen und umsetzen lassen</li>
+      <li>"Als Standalone exportieren" → Datei herunterladen</li>
+      <li>In lokalen Repo-Ordner legen</li>
+      <li><code>.\deploy.ps1</code> ausführen</li>
+    </ol>
+
+    <h3>GitHub Repo</h3>
+    <pre>https://github.com/herrwurz/kuehlwagen
+Branches: main (Prod), dev (Entwicklung)</pre>
+  </div>
+
+  <p style="margin-top:32px;font-size:12.5px;color:#9aa6b2;text-align:center">Hofreither · Kühlwagen-Verleih · Deployment-Anleitung v3.0</p>
 </div>
 </body>
 </html>

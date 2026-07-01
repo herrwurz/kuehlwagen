@@ -70,7 +70,7 @@
   <!-- SIDEBAR -->
   <aside class="kw-sb" style="width:248px;flex-shrink:0;background:#142029;display:flex;flex-direction:column;padding:18px 14px;color:#cdd6df;transform:{{ sbTransform }}">
     <div style="display:flex;align-items:center;gap:11px;padding:6px 8px 20px 8px">
-      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(150deg,#3b82d6,#2c63b0);display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff;flex-shrink:0">❄</div>
+      <img src="uploads/logo-weiss-transparent-1000.gif" style="height:36px;width:auto;display:block;flex-shrink:0">
       <div>
         <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:-.2px">Kühlwagen</div>
         <div style="font-size:11px;color:#7d8a97;font-weight:500">Verleih-Verwaltung</div>
@@ -185,12 +185,12 @@
       <div style="max-width:1180px">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px">
           <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:18px">
-            <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Auslastung Juni</div>
+            <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Auslastung {{ curMonLabel }}</div>
             <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;margin-top:8px;color:#1b2733">{{ auslPct }}<span style="font-size:18px;color:#9aa6b2">%</span></div>
             <div style="height:6px;background:#eef2f6;border-radius:4px;margin-top:10px;overflow:hidden"><div style="height:100%;border-radius:4px;background:#3b82d6;width:{{ auslBar }}"></div></div>
           </div>
           <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:18px">
-            <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Umsatz Juni</div>
+            <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Umsatz {{ curMonLabel }}</div>
             <div style="font-family:'DM Mono',monospace;font-size:30px;font-weight:500;margin-top:8px;color:#1b2733">{{ umsatzFmt }}</div>
             <div style="font-size:12px;color:#2f9e6a;margin-top:8px;font-weight:600">{{ umsatzBookings }} Buchungen</div>
           </div>
@@ -258,18 +258,82 @@
 
       <!-- BELEGUNG -->
       <sc-if value="{{ isBelegung }}" hint-placeholder-val="{{ false }}">
-      <div style="max-width:1300px">
-        <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:22px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <button onClick="{{ prevMonth }}" style-hover="background:#eef2f7" style="background:#f4f6f9;border:1px solid #dde2e9;border-radius:9px;padding:8px 14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;color:#3a4854;cursor:pointer;transition:background .12s">← Zurück</button>
-            <div style="font-size:16px;font-weight:700;color:#1b2733">{{ calHeader }}</div>
-            <button onClick="{{ nextMonth }}" style-hover="background:#eef2f7" style="background:#f4f6f9;border:1px solid #dde2e9;border-radius:9px;padding:8px 14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;color:#3a4854;cursor:pointer;transition:background .12s">Vor →</button>
+      <div style="max-width:1100px">
+
+        <!-- Filter Toolbar -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+          <div style="display:flex;background:#f0f2f5;border-radius:10px;padding:3px;gap:2px">
+            <button onClick="{{ setBelTag }}" style-hover="opacity:.85" style="padding:7px 16px;border-radius:8px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:{{ belBgTag }};color:{{ belClTag }};transition:all .12s">Tag</button>
+            <button onClick="{{ setBelWoche }}" style-hover="opacity:.85" style="padding:7px 16px;border-radius:8px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:{{ belBgWoche }};color:{{ belClWoche }};transition:all .12s">Woche</button>
+            <button onClick="{{ setBelMonat }}" style-hover="opacity:.85" style="padding:7px 16px;border-radius:8px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:{{ belBgMonat }};color:{{ belClMonat }};transition:all .12s">Monat</button>
+            <button onClick="{{ setBelJahr }}" style-hover="opacity:.85" style="padding:7px 16px;border-radius:8px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;background:{{ belBgJahr }};color:{{ belClJahr }};transition:all .12s">Jahr</button>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px">
-            {{ month1El }}
-            {{ month2El }}
-          </div>
+          <button onClick="{{ belPrev }}" style-hover="background:#eef2f7" style="background:#fff;border:1px solid #e6eaef;border-radius:9px;padding:7px 14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;color:#3a4854;cursor:pointer">← Zurück</button>
+          <div style="font-size:15px;font-weight:700;color:#1b2733;padding:0 4px">{{ belHeader }}</div>
+          <button onClick="{{ belNext }}" style-hover="background:#eef2f7" style="background:#fff;border:1px solid #e6eaef;border-radius:9px;padding:7px 14px;font-family:'Hanken Grotesk',sans-serif;font-size:13px;font-weight:600;color:#3a4854;cursor:pointer">Vor →</button>
+          <button onClick="{{ belToday }}" style-hover="background:#eef2f7" style="margin-left:auto;background:#fff;border:1px solid #e6eaef;border-radius:9px;padding:7px 14px;font-family:'Hanken Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:#3b82d6;cursor:pointer">Heute</button>
         </div>
+
+        <!-- MONAT-Ansicht -->
+        <sc-if value="{{ belIsMonat }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:22px">
+            {{ month1El }}
+          </div>
+        </sc-if>
+
+        <!-- TAG & WOCHE & JAHR — Liste -->
+        <sc-if value="{{ belIsList }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;overflow:hidden">
+            <sc-for list="{{ belRows }}" as="br" hint-placeholder-count="3">
+              <div style="padding:0">
+                <!-- Tages-Header -->
+                <div style="padding:10px 20px;background:{{ br.headBg }};border-bottom:1px solid #eef1f5;display:flex;align-items:center;gap:12px">
+                  <div style="font-size:13px;font-weight:700;color:{{ br.headFg }}">{{ br.dayLabel }}</div>
+                  <div style="font-size:11.5px;color:#9aa6b2">{{ br.dateLabel }}</div>
+                  <sc-if value="{{ br.isToday }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#3b82d6;color:#fff">Heute</span></sc-if>
+                </div>
+                <!-- Buchungen des Tages -->
+                <sc-for list="{{ br.bookings }}" as="bb" hint-placeholder-count="1">
+                  <div onClick="{{ bb.go }}" style-hover="background:#f6f8fb" style="display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid #f0f2f5;cursor:pointer;transition:background .12s">
+                    <div style="width:4px;height:36px;border-radius:4px;flex-shrink:0;background:{{ bb.color }}"></div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-size:13.5px;font-weight:600;color:#1b2733">{{ bb.kunde }}</div>
+                      <div style="font-size:12px;color:#8a96a3;margin-top:2px">{{ bb.zeitraum }} · {{ bb.grund }}</div>
+                    </div>
+                    <span style="font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;color:{{ bb.fg }};background:{{ bb.bg }}">{{ bb.statusLabel }}</span>
+                  </div>
+                </sc-for>
+                <!-- Kein Eintrag -->
+                <sc-if value="{{ br.empty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:14px 20px;font-size:12.5px;color:#c8d0d8;font-style:italic">Keine Buchungen</div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div style="display:{{ belEmptyDisplay }};text-align:center;padding:48px;color:#9aa6b2;font-size:14px">Keine Buchungen im gewählten Zeitraum</div>
+          </div>
+        </sc-if>
+
+        <!-- JAHR-Ansicht -->
+        <sc-if value="{{ belIsJahr }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <sc-for list="{{ jahrRows }}" as="jm" hint-placeholder-count="12">
+              <div onClick="{{ jm.go }}" style-hover="border-color:#3b82d6" style="background:#fff;border:1px solid {{ jm.border }};border-radius:12px;padding:16px;cursor:pointer;transition:border-color .12s">
+                <div style="font-size:13px;font-weight:700;color:#1b2733;margin-bottom:10px">{{ jm.label }}</div>
+                <sc-for list="{{ jm.bookings }}" as="jb" hint-placeholder-count="1">
+                  <div style="display:flex;align-items:center;gap:7px;padding:4px 0;border-top:1px solid #f0f2f5">
+                    <div style="width:6px;height:6px;border-radius:50%;flex-shrink:0;background:{{ jb.color }}"></div>
+                    <div style="font-size:12px;color:#3a4854;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ jb.kunde }}</div>
+                    <div style="font-size:11px;color:#9aa6b2;margin-left:auto;font-family:'DM Mono',monospace;white-space:nowrap">{{ jb.days }}T</div>
+                  </div>
+                </sc-for>
+                <div style="display:{{ jm.emptyDisplay }};font-size:11.5px;color:#c8d0d8;font-style:italic;margin-top:4px">Keine Buchungen</div>
+                <div style="margin-top:10px;height:4px;background:#eef2f6;border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:#3b82d6;width:{{ jm.barW }}"></div></div>
+                <div style="font-size:11px;color:#9aa6b2;margin-top:4px">{{ jm.ausl }}% Auslastung</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
       </div>
       </sc-if>
 
@@ -711,7 +775,8 @@
         <!-- Vorschau -->
         <div style="background:#f0f5fc;border:1px solid #c8d9f0;border-radius:14px;padding:18px 20px">
           <div style="font-size:12px;font-weight:600;color:#1b5fb8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Rechnungskopf-Vorschau</div>
-          <div style="font-size:13.5px;font-weight:700;color:#142029">❄ {{ stFirma }}</div>
+          <img src="uploads/stvalentin-logo-blau.png" style="height:48px;width:auto;display:block;margin-bottom:8px">
+          <div style="font-size:13.5px;font-weight:700;color:#142029">{{ stFirma }}</div>
           <div style="font-size:12.5px;color:#5a6675;margin-top:4px;line-height:1.6">{{ stAdresse }}<br/>{{ stKontakt }}</div>
           <div style="font-size:12px;font-family:'DM Mono',monospace;color:#5a6675;margin-top:3px;display:{{ stUidDisplay }}">{{ stUid }}</div>
           <div style="height:1px;background:#c8d9f0;margin:12px 0"></div>
@@ -741,6 +806,21 @@
             </label>
           </div>
           <div style="font-size:12px;color:#7a8794;background:#f6f8fb;border-radius:9px;padding:11px 14px;line-height:1.6">Enthält alle Buchungen, Wartungseinträge und Stammdaten. Kann auf einem anderen Gerät importiert werden.</div>
+        </div>
+
+        <!-- Reset -->
+        <div style="background:#fff;border:1.5px solid #e8bcbb;border-radius:14px;padding:22px 24px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+            <div style="width:36px;height:36px;border-radius:10px;background:#fbecec;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#c25450" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><line x1="7" y1="7" x2="13" y2="13"/><line x1="13" y1="7" x2="7" y2="13"/></svg>
+            </div>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:#9a3b38">Alle Daten zurücksetzen</div>
+              <div style="font-size:12px;color:#c25450">Löscht alle Buchungen, Kundendaten und lokalen Speicher</div>
+            </div>
+          </div>
+          <div style="font-size:13px;color:#5a6675;margin-bottom:16px;line-height:1.6">Diese Funktion löscht <strong>alle Buchungen, Wartungseinträge und gespeicherten Daten</strong> — sowohl lokal als auch in PocketBase. Nur für die Ersteinrichtung verwenden!</div>
+          <button onClick="{{ resetAllData }}" style-hover="background:#9a3b38" style="background:#c25450;color:#fff;border:none;border-radius:10px;padding:12px 24px;font-family:'Hanken Grotesk',sans-serif;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .12s">Alle Daten unwiderruflich löschen</button>
         </div>
 
         <div style="display:flex;justify-content:flex-end;padding-bottom:8px">
@@ -924,7 +1004,8 @@
   <div class="inv" onClick="{{ stop }}" style="width:794px;background:#fff;border-radius:6px;box-shadow:0 24px 64px rgba(20,32,41,.3);padding:52px 58px;margin:auto 0;flex-shrink:0">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:22px;border-bottom:2px solid #eef1f5">
       <div>
-        <div style="font-size:22px;font-weight:800;color:#142029;letter-spacing:-.5px">❄ {{ stFirma }}</div>
+        <img src="uploads/stvalentin-logo-blau.png" style="height:56px;width:auto;display:block;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">{{ stFirma }}</div>
         <div style="font-size:13px;color:#7a8794;margin-top:8px;line-height:1.6">{{ stAdresse }}<br/>{{ stKontakt }}</div>
         <div style="font-size:12px;color:#7a8794;display:{{ stUidDisplay }}">{{ stUid }}</div>
       </div>
@@ -1004,7 +1085,8 @@
   <div class="inv" onClick="{{ stop }}" style="width:794px;background:#fff;border-radius:6px;box-shadow:0 24px 64px rgba(20,32,41,.3);padding:52px 58px;margin:auto 0;flex-shrink:0">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:22px;border-bottom:2px solid #eef1f5">
       <div>
-        <div style="font-size:22px;font-weight:800;color:#142029;letter-spacing:-.5px">❄ {{ stFirma }}</div>
+        <img src="uploads/stvalentin-logo-blau.png" style="height:56px;width:auto;display:block;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">{{ stFirma }}</div>
         <div style="font-size:13px;color:#7a8794;margin-top:8px;line-height:1.6">{{ stAdresse }}<br/>{{ stKontakt }}</div>
       </div>
       <div style="text-align:right">
@@ -1077,21 +1159,14 @@ class Component extends DCLogic {
   MONTHS_SHORT = ['JAN','FEB','MÄR','APR','MAI','JUN','JUL','AUG','SEP','OKT','NOV','DEZ'];
   PALETTE = ['#e05252','#e87848','#f0b030','#c0c830','#60c048','#2ab870','#26b8a8','#2aa8d0','#3a7cd6','#4e60d8','#7e50d8','#b040c8','#d840a0','#e03860','#9e7030','#56788a'];
   VEH_COLORS = ['#3b82d6','#2f9e6a','#d98a2b','#e05252','#7e50d8'];
-  TODAY = '2026-06-29';
+  get TODAY() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   history = { months:['Jan','Feb','Mär','Apr','Mai','Jun'], ausl:[38,42,51,60,66,57], umsatz:[980,1120,1360,1615,1870,1445] };
 
   state = {
     view: 'dashboard',
-    bookings: [
-      {id:'B-2041',kunde:'Familie Kogler',telefon:'0664 1234567',von:'2026-06-05',bis:'2026-06-07',grund:'Hochzeit',preis:255,kaution:300,notiz:'',status:'abgeschlossen',kmRaus:45120,kmRein:45290,rechnung:{nr:'R-2026-018',bezahlt:true,gemahnt:false},color:null,vehicleId:'v1'},
-      {id:'B-2042',kunde:'Gasthaus Brandner',telefon:'0512 998877',von:'2026-06-12',bis:'2026-06-14',grund:'Catering',preis:255,kaution:300,notiz:'Stammkunde, Rechnung per Post.',status:'abgeschlossen',kmRaus:45290,kmRein:45355,rechnung:{nr:'R-2026-019',bezahlt:false,gemahnt:false},color:'#2ab870',vehicleId:'v1'},
-      {id:'B-2043',kunde:'Sportverein Aldrans',telefon:'0676 222333',von:'2026-06-19',bis:'2026-06-22',grund:'Vereinsfest',preis:340,kaution:300,notiz:'',status:'abgeschlossen',kmRaus:45355,kmRein:45498,rechnung:{nr:'R-2026-020',bezahlt:true,gemahnt:false},color:'#e87848',vehicleId:'v1'},
-      {id:'B-2044',kunde:'Markus Steiner',telefon:'0660 445566',von:'2026-06-24',bis:'2026-06-29',grund:'Geburtstag',preis:510,kaution:300,notiz:'Abholung 8 Uhr.',status:'laufend',kmRaus:45498,kmRein:null,rechnung:null,color:'#3a7cd6',vehicleId:'v1'},
-      {id:'B-2045',kunde:'Weingut Hofer',telefon:'0664 778899',von:'2026-06-30',bis:'2026-07-03',grund:'Hofmesse',preis:340,kaution:300,notiz:'',status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:'#7e50d8',vehicleId:'v1'},
-      {id:'B-2046',kunde:'Eventagentur Nord',telefon:'0720 101010',von:'2026-07-07',bis:'2026-07-09',grund:'Firmenfeier',preis:255,kaution:350,notiz:'Lieferung gewünscht.',status:'angefragt',kmRaus:null,kmRein:null,rechnung:null,color:null,vehicleId:'v1'}
-    ],
-    kmCurrent: 45498,
-    letzteReinigung: '2026-06-22',
+    bookings: [],
+    kmCurrent: 0,
+    letzteReinigung: '',
     modalOpen: false,
     draft: {kunde:'',telefon:'',email:'',grund:'',von:'',bis:'',preis:'',kaution:'300',notiz:'',vehicleId:'v1'},
     selectedId: null,
@@ -1099,8 +1174,10 @@ class Component extends DCLogic {
     protoPhase: 'ausgabe',
     proto: {km:'',tank:'voll',zustand:'',sauber:true,kaution:true},
     toast: null,
-    calMonth: 6,
-    calYear: 2026,
+    calMonth: new Date().getMonth()+1,
+    calYear: new Date().getFullYear(),
+    belFilter: 'monat',
+    belOffset: 0,
     printInvoiceId: null,
     angebotId: null,
     expandedKunde: null,
@@ -1121,10 +1198,10 @@ class Component extends DCLogic {
     invoiceExtras: {},
     extraDraft: {desc:'',betrag:''},
     stammdaten: {
-      vehicles: [{id:'v1',name:'Kühlanhänger 1300',kennz:'IL-KÜHL 1',tagessatz:85,kaution:300,color:'#3b82d6'}],
-      firma:'Kühlwagen-Verleih Mustermann', strasse:'Musterstraße 1', plz:'6020', ort:'Innsbruck',
-      tel:'0512 123456', email:'info@kuehlverleih.at', uid:'',
-      kontoinhaber:'Kühlwagen-Verleih Mustermann', iban:'AT00 0000 0000 0000 0000', bic:'MUSTRAT21XXX', bank:''
+      vehicles: [{id:'v1',name:'Kühlkoffer FK300/16 T 2700',kennz:'AM-',tagessatz:0,kaution:0,color:'#3b82d6'}],
+      firma:'Stadtgemeinde St. Valentin', strasse:'Hauptplatz 7', plz:'4300', ort:'St. Valentin',
+      tel:'+43 7435 505-0', email:'rathaus@st-valentin.at', uid:'',
+      kontoinhaber:'Stadtgemeinde St. Valentin', iban:'AT00 0000 0000 0000 0000', bic:'', bank:''
     }
   };
 
@@ -1140,7 +1217,7 @@ class Component extends DCLogic {
   zeitraum(b) { return this.fmtD(b.von)+'–'+this.fmtD(b.bis); }
   days(b) { return Math.round((this.parseD(b.bis)-this.parseD(b.von))/86400000)+1; }
   money(n) { return '€ '+Number(n).toLocaleString('de-DE'); }
-  junDays(b) { const lo=this.parseD('2026-06-01'),hi=this.parseD('2026-06-30'); let s=this.parseD(b.von),e=this.parseD(b.bis); if(e<lo||s>hi)return 0; if(s<lo)s=lo; if(e>hi)e=hi; return Math.round((e-s)/86400000)+1; }
+  curMonthDays(b) { const now=new Date(); const y=now.getFullYear(),m=now.getMonth(); const lo=new Date(y,m,1),hi=new Date(y,m+1,0); let s=this.parseD(b.von),e=this.parseD(b.bis); if(e<lo||s>hi)return 0; if(s<lo)s=lo; if(e>hi)e=hi; return Math.round((e-s)/86400000)+1; }
   statusMeta(st) { const m={angefragt:{label:'Angefragt',fg:'#8a5a16',bg:'#fdf3e6',dot:'#d98a2b'},'bestätigt':{label:'Bestätigt',fg:'#1b5fb8',bg:'#e9f1fb',dot:'#3b82d6'},laufend:{label:'Unterwegs',fg:'#1d6e48',bg:'#e7f5ee',dot:'#2f9e6a'},abgeschlossen:{label:'Abgeschlossen',fg:'#5a6675',bg:'#f0f2f5',dot:'#8a96a3'},storniert:{label:'Storniert',fg:'#9a3b38',bg:'#fbecec',dot:'#c25450'}}; return m[st]||m.angefragt; }
   isOverdue(b) { if(!b.rechnung||b.rechnung.bezahlt)return false; const due=new Date(this.parseD(b.bis).getTime()+14*86400000); return due<this.parseD(this.TODAY); }
 
@@ -1275,6 +1352,73 @@ class Component extends DCLogic {
   // ---- calendar nav ----
   prevMonth(){let{calMonth:m,calYear:y}=this.state;if(m===1){m=12;y--;}else m--;this.setState({calMonth:m,calYear:y});}
   nextMonth(){let{calMonth:m,calYear:y}=this.state;if(m===12){m=1;y++;}else m++;this.setState({calMonth:m,calYear:y});}
+  belPrev(){
+    const{belFilter:f,belOffset:o,calMonth:m,calYear:y}=this.state;
+    if(f==='monat'){let nm=m-1,ny=y;if(nm<1){nm=12;ny--;}this.setState({calMonth:nm,calYear:ny});}
+    else this.setState({belOffset:o-1});
+  }
+  belNext(){
+    const{belFilter:f,belOffset:o,calMonth:m,calYear:y}=this.state;
+    if(f==='monat'){let nm=m+1,ny=y;if(nm>12){nm=1;ny++;}this.setState({calMonth:nm,calYear:ny});}
+    else this.setState({belOffset:o+1});
+  }
+  belToday(){const now=new Date();this.setState({belOffset:0,calMonth:now.getMonth()+1,calYear:now.getFullYear()});}
+
+  // Belegung helpers
+  belDates(filter,offset){
+    const now=new Date();
+    if(filter==='tag'){
+      const d=new Date(now);d.setDate(d.getDate()+offset);
+      return{start:d,end:d};
+    }
+    if(filter==='woche'){
+      const d=new Date(now);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow+offset*7);
+      const e=new Date(d);e.setDate(e.getDate()+6);
+      return{start:d,end:e};
+    }
+    if(filter==='monat'){
+      const m=(now.getMonth()+offset+120)%12;const y=now.getFullYear()+Math.floor((now.getMonth()+offset)/12);
+      return{start:new Date(y,m,1),end:new Date(y,m+1,0),month:m+1,year:y};
+    }
+    if(filter==='jahr'){
+      const y=now.getFullYear()+offset;
+      return{start:new Date(y,0,1),end:new Date(y,11,31),year:y};
+    }
+  }
+  buildBelRows(filter,offset,bookings){
+    const{start,end}=this.belDates(filter,offset);
+    const days=[];
+    const cur=new Date(start);
+    while(cur<=end){days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+    const now2=new Date();const tod=now2.getFullYear()+'-'+String(now2.getMonth()+1).padStart(2,'0')+'-'+String(now2.getDate()).padStart(2,'0');
+    const WDAYS=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const MONTHS_SHORT=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    return days.map(d=>{
+      const iso=this.iso(d);
+      const bks=bookings.filter(b=>b.status!=='storniert'&&iso>=b.von&&iso<=b.bis);
+      const isToday=iso===tod;
+      return{
+        dayLabel:WDAYS[d.getDay()],
+        dateLabel:d.getDate()+'. '+MONTHS_SHORT[d.getMonth()]+' '+d.getFullYear(),
+        isToday,
+        headBg:isToday?'#e9f1fb':'#fafbfc',
+        headFg:isToday?'#1b5fb8':'#3a4854',
+        empty:bks.length===0,
+        bookings:bks.map(b=>{const sm=this.statusMeta(b.status);return{kunde:b.kunde,zeitraum:this.zeitraum(b),grund:b.grund,color:b.color||'#3b82d6',fg:sm.fg,bg:sm.bg,statusLabel:sm.label,go:()=>this.selectBooking(b.id)};})
+      };
+    });
+  }
+  buildJahrRows(year,bookings){
+    const MONTHS_DE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    return Array.from({length:12},(_,i)=>{
+      const m=i+1;
+      const daysInM=new Date(year,m,0).getDate();
+      const bks=bookings.filter(b=>b.status!=='storniert'&&b.von<=year+'-'+String(m).padStart(2,'0')+'-31'&&b.bis>=year+'-'+String(m).padStart(2,'0')+'-01');
+      const booked=bks.reduce((a,b)=>{const lo=new Date(year,i,1),hi=new Date(year,i+1,0);let s=this.parseD(b.von),e=this.parseD(b.bis);if(e<lo||s>hi)return a;if(s<lo)s=lo;if(e>hi)e=hi;return a+Math.round((e-s)/86400000)+1;},0);
+      const ausl=Math.min(100,Math.round(booked/daysInM*100));
+      return{label:MONTHS_DE[i]+' '+year,border:bks.length?'#c8d9f0':'#e6eaef',emptyDisplay:bks.length?'none':'block',ausl,barW:ausl+'%',bookings:bks.slice(0,4).map(b=>({kunde:b.kunde,color:b.color||'#3b82d6',days:this.days(b)})),go:()=>{this.setState({belFilter:'monat',belOffset:i-new Date().getMonth()+(year-new Date().getFullYear())*12});this.go('belegung');}};
+    });
+  }
 
   // ---- kunden ----
   toggleKunde(name){this.setState({expandedKunde:this.state.expandedKunde===name?null:name});}
@@ -1298,7 +1442,7 @@ class Component extends DCLogic {
         clearTimeout(timer);
         if(r.ok){
           this.pb=new window.PocketBase(url);
-          if(this.pb.authStore.isValid){this.setState({loggedIn:true});this.loadFromPB();this.loadAnfragen();}
+          if(this.pb.authStore.isValid){this.setState({loggedIn:true});this.loadFromPB();this.loadAnfragen();setTimeout(()=>this.syncCalendar(),2000);}
         } else { this._initLS(); }
       })
       .catch(e=>{ clearTimeout(timer); if(e&&e.name!=='AbortError')console.warn('PB:',e); this._initLS(); });
@@ -1308,7 +1452,7 @@ class Component extends DCLogic {
     if(this.state.loginLoading)return;
     this.setState({loginLoading:true,loginError:''});
     this.pb.collection('users').authWithPassword(this.state.loginEmail,this.state.loginPassword)
-      .then(()=>{this.setState({loggedIn:true,loginLoading:false});this.loadFromPB();this.loadAnfragen();})
+      .then(()=>{this.setState({loggedIn:true,loginLoading:false});this.loadFromPB();this.loadAnfragen();setTimeout(()=>this.syncCalendar(),2000);})
       .catch(()=>this.setState({loginError:'E-Mail oder Passwort falsch',loginLoading:false}));
   }
   logout(){
@@ -1333,6 +1477,7 @@ class Component extends DCLogic {
       }).catch(e=>console.warn('PB load:',e));
   }
   saveToPB(){
+    if(this._resetMode)return;
     clearTimeout(this._pbT);
     this._pbT=setTimeout(()=>{
       if(!this.pb){
@@ -1360,6 +1505,38 @@ class Component extends DCLogic {
         }
       }
     }catch(e){}
+  }
+
+  // ---- reset ----
+  async resetAllData() {
+    if (!window.confirm('Wirklich ALLE Daten löschen? Das kann nicht rückgängig gemacht werden!')) return;
+    clearTimeout(this._pbT);
+    this._resetMode = true;
+    const emptyData = {bookings:[],wartung:[],kmCurrent:0,letzteReinigung:'',stammdaten:{firma:'Stadtgemeinde St. Valentin',strasse:'Hauptplatz 7',plz:'4300',ort:'St. Valentin',tel:'+43 7435 505-0',email:'rathaus@st-valentin.at',uid:'',kontoinhaber:'Stadtgemeinde St. Valentin',iban:'',bic:'',bank:''},invoiceExtras:[]};
+    try {
+      if (this.pb) {
+        const res = await this.pb.collection('kw_state').getList(1, 100);
+        for (const item of res.items) {
+          try { await this.pb.collection('kw_state').update(item.id, {data: emptyData}); } catch(e) { console.error('Update failed:', e); }
+        }
+        if (res.items.length === 0 && this.state.pbRecordId) {
+          try { await this.pb.collection('kw_state').update(this.state.pbRecordId, {data: emptyData}); } catch(e) {}
+        }
+        try {
+          const cal = await this.pb.collection('kw_calendar').getList(1, 100);
+          for (const item of cal.items) { await this.pb.collection('kw_calendar').delete(item.id); }
+        } catch(e) {}
+        try {
+          const anf = await this.pb.collection('kw_booking_requests').getList(1, 100);
+          for (const item of anf.items) { await this.pb.collection('kw_booking_requests').delete(item.id); }
+        } catch(e) {}
+      }
+    } catch(e) { console.error('Reset Fehler:', e); }
+    // Alle bekannten localStorage Keys löschen
+    ['kw-verleih-v1','kw-verleih-kunden','kw-verleih-vehicles','kw-pb-url'].forEach(k => localStorage.removeItem(k));
+    localStorage.clear();
+    alert('Alle Daten gelöscht! Bitte jetzt neu einloggen.');
+    window.location.reload();
   }
 
   // ---- export / backup ----
@@ -1410,8 +1587,9 @@ class Component extends DCLogic {
     this._resize=()=>this.forceUpdate();
     window.addEventListener('resize',this._resize);
     this.initPB();
+    this._anfragenInterval = setInterval(() => { if(this.state.loggedIn) this.loadAnfragen(); }, 2 * 60 * 1000);
   }
-  componentWillUnmount(){window.removeEventListener('resize',this._resize);clearTimeout(this._pbT);}
+  componentWillUnmount(){window.removeEventListener('resize',this._resize);clearTimeout(this._pbT);clearInterval(this._anfragenInterval);}
   componentDidUpdate(pp,ps){
     const s=this.state;
     if(ps.bookings!==s.bookings||ps.kmCurrent!==s.kmCurrent||ps.letzteReinigung!==s.letzteReinigung||ps.stammdaten!==s.stammdaten||ps.wartung!==s.wartung||ps.invoiceExtras!==s.invoiceExtras){
@@ -1533,12 +1711,12 @@ class Component extends DCLogic {
     const von=a.from_date,bis=a.to_date;
     const dd=Math.round((this.parseD(bis)-this.parseD(von))/86400000)+1;
     const veh=this.getVehicles()[0];
-    const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'—',email:a.email||'',von,bis,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz||85),kaution:veh?.kaution||300,notiz:'Online-Anfrage',status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
+    const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'',email:a.email||'',von,bis,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz||85),kaution:veh?.kaution||300,notiz:'Online-Anfrage',status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
     this.setState({bookings:[...this.state.bookings,nb]});
     this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>this.loadAnfragen()).catch(()=>{});
     this.toast('Anfrage genehmigt – Buchung '+nb.id+' angelegt','ok');
   }
-  openReject(id){this.setState({rejectId:id,rejectNote:'',anfragenFilter:'pending'});}
+  openReject(id){this.setState({rejectId:id,rejectNote:''});}
   closeReject(){this.setState({rejectId:null,rejectNote:''}); }
   submitReject(){
     const id=this.state.rejectId;
@@ -1570,11 +1748,17 @@ class Component extends DCLogic {
     const dayNames=['So','Mo','Di','Mi','Do','Fr','Sa'];
     const todayLabel=dayNames[todayDate.getDay()]+', '+this.fmtDFull(this.TODAY);
 
-    // KPIs
-    const juneB=b.filter(x=>x.von.startsWith('2026-06')&&x.status!=='storniert');
+    // KPIs — aktueller Monat
+    const now=new Date();
+    const curY=now.getFullYear(),curM=now.getMonth();
+    const curMonStr=curY+'-'+String(curM+1).padStart(2,'0');
+    const daysInCurMonth=new Date(curY,curM+1,0).getDate();
+    const MONTHS_DE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    const curMonLabel=MONTHS_DE[curM];
+    const juneB=b.filter(x=>x.von.startsWith(curMonStr)&&x.status!=='storniert');
     const umsatz=juneB.reduce((a,x)=>a+x.preis,0);
-    const booked=b.filter(x=>x.status!=='storniert').reduce((a,x)=>a+this.junDays(x),0);
-    const auslPct=Math.round(booked/30*100);
+    const booked=b.filter(x=>x.status!=='storniert').reduce((a,x)=>a+this.curMonthDays(x),0);
+    const auslPct=Math.round(booked/daysInCurMonth*100);
     const offene=b.filter(x=>x.rechnung&&!x.rechnung.bezahlt);
     const offenSum=offene.reduce((a,x)=>a+x.preis,0);
     const aktive=b.find(x=>x.status==='laufend');
@@ -1657,9 +1841,24 @@ class Component extends DCLogic {
     let draftRate=this.money(draftVeh?.tagessatz||85)+' / Tag';
     if(s.draft.von&&s.draft.bis){const dd=Math.round((this.parseD(s.draft.bis)-this.parseD(s.draft.von))/86400000)+1;if(dd>0)draftDaysText=dd+' Tage × '+this.money(draftVeh?.tagessatz||85);}
 
-    // Calendar
+    // Calendar / Belegung
+    const bf=s.belFilter,bo=s.belOffset;
+    const calMonthForRender=s.calMonth,calYearForRender=s.calYear;
+    const belActive='#142029',belActiveTxt='#fff',belInactive='transparent',belInactiveTxt='#5a6675';
+    const MONTHS_DE_BEL=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+    // belDates nur für tag/woche/jahr (monat nutzt calMonth/calYear direkt)
+    const belDates=bf!=='monat'?this.belDates(bf,bo):null;
+    let belHeader='';
+    if(bf==='tag'){const d=belDates.start;belHeader=d.getDate()+'. '+MONTHS_DE_BEL[d.getMonth()]+' '+d.getFullYear();}
+    else if(bf==='woche'){const sw=belDates.start,ew=belDates.end;belHeader=sw.getDate()+'. '+MONTHS_DE_BEL[sw.getMonth()]+' – '+ew.getDate()+'. '+MONTHS_DE_BEL[ew.getMonth()]+' '+ew.getFullYear();}
+    else if(bf==='monat'){belHeader=MONTHS_DE_BEL[calMonthForRender-1]+' '+calYearForRender;}
+    else if(bf==='jahr'){const jd=this.belDates('jahr',bo);belHeader='Jahr '+jd.year;}
+    const belRows=(bf==='tag'||bf==='woche')?this.buildBelRows(bf,bo,b):[];
+    const jahrDates=bf==='jahr'?this.belDates('jahr',bo):null;
+    const jahrRows=jahrDates?this.buildJahrRows(jahrDates.year,b):[];
+    const belEmptyDisplay=(belRows.length>0&&belRows.every(r=>r.empty))||belRows.length===0?'block':'none';
     let m2=s.calMonth+1,y2=s.calYear;if(m2>12){m2=1;y2++;}
-    const calHeader=this.MONTHS[s.calMonth-1]+' / '+this.MONTHS[m2-1]+(s.calYear!==y2?' '+s.calYear+' – '+y2:' '+s.calYear);
+    const calHeader=MONTHS_DE_BEL[calMonthForRender-1]+' '+calYearForRender;
 
     // Wartung
     const wartTypeMeta={service:{label:'Ölservice / Inspektion',icon:'🔧',iconBg:'#f0f9f4'},tuev:{label:'TÜV / §57a',icon:'📋',iconBg:'#e9f1fb'},reifen:{label:'Reifenwechsel',icon:'⚙',iconBg:'#fdf3e6'},reinigung:{label:'Grundreinigung',icon:'🧹',iconBg:'#f3faf6'},sonstiges:{label:'Sonstiges',icon:'📌',iconBg:'#f6f8fb'}};
@@ -1730,7 +1929,7 @@ class Component extends DCLogic {
       goDashboard:()=>this.go('dashboard'),goBelegung:()=>this.go('belegung'),goBuchungen:()=>this.go('buchungen'),goKunden:()=>this.go('kunden'),goUebergabe:()=>this.go('uebergabe'),goRechnungen:()=>this.go('rechnungen'),goStatistik:()=>this.go('statistik'),goWartung:()=>this.go('wartung'),goStammdaten:()=>this.go('stammdaten'),goAnfragen:()=>this.go('anfragen'),
       // sidebar
       sideVehicles,sbTransform,sbOverlay:isMobile&&s.sidebarOpen,toggleSidebar:()=>this.toggleSidebar(),closeSidebar:()=>this.closeSidebar(),
-      reinigungFmt:this.fmtD(s.letzteReinigung),
+      reinigungFmt:s.letzteReinigung ? this.fmtD(s.letzteReinigung) : '—',
       // vehicle / stamm
       vehLabel:veh.label,vehFg:veh.fg,vehBg:veh.bg,vehFg2:veh.fg2,vehNote:veh.note,
       stFirma:st.firma,stAdresse:st.strasse+' · '+st.plz+' '+st.ort,stKontakt:'Tel: '+st.tel+' · '+st.email,stStrasse:st.strasse,stPlzOrt:st.plz+' '+st.ort,stTel:st.tel,stVehLabel:pv.name+' ('+pv.kennz+')',stIbanLine:'IBAN: '+st.iban+' · BIC: '+st.bic,stUid:st.uid?'UID: '+st.uid:'',stUidDisplay:st.uid?'block':'none',
@@ -1739,7 +1938,7 @@ class Component extends DCLogic {
       // header
       viewTitle:{dashboard:'Übersicht',belegung:'Belegung',buchungen:'Buchungen',kunden:'Kundenstamm',uebergabe:'Übergabe-Protokoll',rechnungen:'Rechnungen',statistik:'Statistik',wartung:'Wartungsplan',stammdaten:'Stammdaten',anfragen:'Online-Anfragen'}[view],
       viewSub:{dashboard:'Aktueller Stand',belegung:'Kalender & Verfügbarkeit',buchungen:'Alle Reservierungen',kunden:'Stammkundendaten & Verlauf',uebergabe:'Ausgabe & Rücknahme',rechnungen:'Abrechnung & Zahlung',statistik:'Auslastung & Umsatz',wartung:'Fahrzeugpflege & Termine',stammdaten:'Fahrzeug · Unternehmen · Bankverbindung',anfragen:'Buchungsanfragen von der Website'}[view],
-      todayLabel,openModal:()=>this.openModal(),exportCSV:()=>this.exportCSV(),exportBackup:()=>this.exportBackup(),importBackup:e=>this.importBackup(e),
+      todayLabel,openModal:()=>this.openModal(),exportCSV:()=>this.exportCSV(),exportBackup:()=>this.exportBackup(),importBackup:e=>this.importBackup(e),resetAllData:()=>this.resetAllData(),
       // views
       isDashboard:view==='dashboard',isBelegung:view==='belegung',isBuchungen:view==='buchungen',isKunden:view==='kunden',isUebergabe:view==='uebergabe',isRechnungen:view==='rechnungen',isStatistik:view==='statistik',isWartung:view==='wartung',isStammdaten:view==='stammdaten',isAnfragen:view==='anfragen',
       // anfragen tab
@@ -1756,9 +1955,21 @@ class Component extends DCLogic {
       onRejectNote:e=>this.setState({rejectNote:e.target.value}),
       closeReject:()=>this.closeReject(),submitReject:()=>this.submitReject(),
       // dashboard
-      auslPct,auslBar:auslPct+'%',umsatzFmt:this.money(umsatz),umsatzBookings:juneB.length,offenFmt:this.money(offenSum),offenCount:offene.length,handovers,noHandover:handovers.length?'none':'block',requests:requests.map(r=>({kunde:r.kunde,zeitraum:this.zeitraum(r),confirm:()=>this.confirmBooking(r.id)})),noRequests:requests.length?'none':'block',aktiveKunde:aktive?aktive.kunde:'Wagen verfügbar',aktiveNote:aktive?(aktive.grund+' · zurück am '+this.fmtD(aktive.bis)):'Keine laufende Vermietung',
+      auslPct,auslBar:auslPct+'%',umsatzFmt:this.money(umsatz),umsatzBookings:juneB.length,curMonLabel,offenFmt:this.money(offenSum),offenCount:offene.length,handovers,noHandover:handovers.length?'none':'block',requests:requests.map(r=>({kunde:r.kunde,zeitraum:this.zeitraum(r),confirm:()=>this.confirmBooking(r.id)})),noRequests:requests.length?'none':'block',aktiveKunde:aktive?aktive.kunde:'Wagen verfügbar',aktiveNote:aktive?(aktive.grund+' · zurück am '+this.fmtD(aktive.bis)):'Keine laufende Vermietung',
       // belegung
-      calHeader,month1El:this.renderMonth(s.calMonth,s.calYear),month2El:this.renderMonth(m2,y2),prevMonth:()=>this.prevMonth(),nextMonth:()=>this.nextMonth(),
+      calHeader,month1El:this.renderMonth(calMonthForRender,calYearForRender),month2El:this.renderMonth(m2,y2),prevMonth:()=>this.prevMonth(),nextMonth:()=>this.nextMonth(),
+      // belegung filter
+      belHeader,belRows,jahrRows,belEmptyDisplay,
+      belIsMonat:bf==='monat',belIsList:bf==='tag'||bf==='woche',belIsJahr:bf==='jahr',
+      belBgTag:bf==='tag'?belActive:belInactive,belClTag:bf==='tag'?belActiveTxt:belInactiveTxt,
+      belBgWoche:bf==='woche'?belActive:belInactive,belClWoche:bf==='woche'?belActiveTxt:belInactiveTxt,
+      belBgMonat:bf==='monat'?belActive:belInactive,belClMonat:bf==='monat'?belActiveTxt:belInactiveTxt,
+      belBgJahr:bf==='jahr'?belActive:belInactive,belClJahr:bf==='jahr'?belActiveTxt:belInactiveTxt,
+      setBelTag:()=>this.setState({belFilter:'tag',belOffset:0}),
+      setBelWoche:()=>this.setState({belFilter:'woche',belOffset:0}),
+      setBelMonat:()=>{const now=new Date();this.setState({belFilter:'monat',belOffset:0,calMonth:now.getMonth()+1,calYear:now.getFullYear()});},
+      setBelJahr:()=>this.setState({belFilter:'jahr',belOffset:0}),
+      belPrev:()=>this.belPrev(),belNext:()=>this.belNext(),belToday:()=>this.belToday(),
       // buchungen
       rows,
       // kunden
