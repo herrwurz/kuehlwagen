@@ -30,6 +30,17 @@ docker exec <container-id> /usr/local/bin/pocketbase superuser upsert andreas@ho
 ### PocketBase Benutzer
 - `andreas@hofreither.at` — angelegt in Users-Collection
 
+### Offener Commit (morgen machen)
+Alle heutigen Änderungen committen:
+```powershell
+cd "$env:USERPROFILE\Downloads\kuehlwagen"
+git checkout dev
+# Alle geänderten Dateien in Ordner kopieren (dc.html + standalone)
+git add .
+git commit -m "Belegung Filter Tag/Woche/Monat/Jahr, Anfragen-Tab, Mail-Hooks, Dashboard-Fixes"
+git push
+```
+
 ### ✅ Erledigte Aufgaben
 1. **index.html hochladen** — FERTIG
    - Datei hier herunterladen (Kühlwagen-Verwaltung-standalone.html)
@@ -57,7 +68,7 @@ docker exec <container-id> /usr/local/bin/pocketbase superuser upsert andreas@ho
    docker restart <container-id>
    ```
 
-4. **Root-Redirect** / → /index.html (Traefik-Regel, nicht dringend)
+4. **Root-Redirect** / → /index.html — Traefik-Middleware nötig, komplex, vorerst als Lesezeichen belassen. App läuft stabil unter /index.html
 
 ### Projektdateien
 - `Kühlwagen-Verwaltung.dc.html` — Hauptapp (Design Component)
@@ -67,10 +78,12 @@ docker exec <container-id> /usr/local/bin/pocketbase superuser upsert andreas@ho
 - `Deployment-Anleitung.html` — Vollständige Anleitung
 
 ### Geplant nach erstem vollständigen Deploy
-- Git-Workflow einrichten (GitHub, dev/prod Branches)
+- Git-Workflow einrichten (GitHub, dev/prod Branches) ✅
 - Lokale PocketBase Entwicklungsumgebung (localhost:8090)
+  - pocketbase.exe in kuehlwagen-Ordner legen
+  - PB_URL in App umschaltbar machen (localhost:8090 vs kw.hofreither.at)
 - PB_URL in Buchungsanfrage.dc.html konfigurierbar machen
-- Deploy-Script oder GitHub Actions für Prod-Deploy
+- Deploy-Script oder GitHub Actions für Prod-Deploy ✅
 - Setup-Guide dafür erstellen lassen
 
 ### Wichtige Hinweise

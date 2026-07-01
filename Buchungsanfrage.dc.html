@@ -42,8 +42,9 @@
 </helmet>
 
 <!-- HEADER -->
-<div style="background:#142029;padding:16px 24px;display:flex;align-items:center;gap:14px">
-  <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,#3b82d6,#2c63b0);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0">❄</div>
+<div style="background:#142029;padding:16px 24px;display:flex;align-items:center;gap:16px">
+  <img src="uploads/logo-weiss-transparent-1000.gif" style="height:36px;width:auto;display:block;flex-shrink:0">
+  <div style="width:1px;height:32px;background:#2a3d4d;flex-shrink:0"></div>
   <div>
     <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px">Kühlwagen-Verleih</div>
     <div style="font-size:12px;color:#7d8a97">Unverbindliche Buchungsanfrage</div>
@@ -104,6 +105,11 @@
       </sc-for>
     </div>
 
+    <!-- Hinweis wenn Kalender noch nicht synchronisiert -->
+    <sc-if value="{{ calNotLoaded }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;padding:16px;color:#9aa6b2;font-size:13px">Verfügbarkeit wird geladen …</div>
+    </sc-if>
+
     <!-- Legend -->
     <div style="display:flex;align-items:center;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f2f5;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#f0f9f4;border:1px solid #b8dfcb"></div>Verfügbar</div>
@@ -138,8 +144,8 @@
         <input value="{{ form.name }}" onInput="{{ onName }}" type="text" placeholder="Vor- und Nachname" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
       </div>
       <div>
-        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Firma <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
-        <input value="{{ form.company }}" onInput="{{ onCompany }}" type="text" placeholder="Firmenname" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+        <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Firma/Verein <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
+        <input value="{{ form.company }}" onInput="{{ onCompany }}" type="text" placeholder="Firma oder Verein" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">E-Mail *</label>
@@ -198,6 +204,11 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.loadBusyDates();
+    this._refreshInterval = setInterval(() => this.loadBusyDates(), 5 * 60 * 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._refreshInterval);
   }
 
   loadBusyDates() {
@@ -205,11 +216,29 @@ class Component extends DCLogic {
     fetch(url)
       .then(r => r.json())
       .then(data => {
-        if (data.items && data.items.length > 0 && Array.isArray(data.items[0].data)) {
-          this.setState({ busyRanges: data.items[0].data });
+        if (data.items && data.items.length > 0) {
+          let raw = data.items[0].data;
+          // PocketBase kann JSON-Feld als String zurückgeben
+          if (typeof raw === 'string') { try { raw = JSON.parse(raw); } catch(e) { raw = []; } }
+          if (Array.isArray(raw)) {
+            this.setState({ busyRanges: raw, calLoaded: true });
+          } else {
+            this.setState({ busyRanges: [], calLoaded: true });
+          }
+        } else {
+          this.setState({ busyRanges: [], calLoaded: true });
         }
       })
-      .catch(() => {});
+      .catch(() => { this.setState({ calLoaded: true }); });
+  }
+
+  isRangeAvailable(fromDate, toDate) {
+    return !this.state.busyRanges.some(r => {
+      const rFrom = r.from || r.von || '';
+      const rTo   = r.to   || r.bis || '';
+      if (!rFrom || !rTo) return false;
+      return fromDate <= rTo && rFrom <= toDate;
+    });
   }
 
   today() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -295,10 +324,14 @@ class Component extends DCLogic {
     const s = this.state;
     const f = s.form;
     if (!f.name.trim()) { this.setState({ errorMsg: 'Bitte geben Sie Ihren Namen ein.' }); return; }
-    if (!f.email.trim() || !f.email.includes('@')) { this.setState({ errorMsg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' }); return; }
+    if (!f.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) { this.setState({ errorMsg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein (z.B. name@beispiel.at).' }); return; }
     if (!f.fromDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Startdatum (im Kalender oder im Feld „Von").' }); return; }
     if (!f.toDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Enddatum (im Kalender oder im Feld „Bis").' }); return; }
     if (f.toDate < f.fromDate) { this.setState({ errorMsg: 'Das Enddatum muss nach dem Startdatum liegen.' }); return; }
+    if (!this.isRangeAvailable(f.fromDate, f.toDate)) {
+      this.setState({ errorMsg: 'Der gewählte Zeitraum ist leider nicht verfügbar. Bitte wählen Sie einen anderen Termin.' });
+      return;
+    }
     if (!window.PocketBase) { this.setState({ errorMsg: 'Verbindungsfehler. Bitte Seite neu laden.' }); return; }
 
     this.setState({ submitting: true, errorMsg: '' });
@@ -329,6 +362,7 @@ class Component extends DCLogic {
 
     return {
       calDays,
+      calNotLoaded: !s.calLoaded,
       calHeader: this.MONTHS[s.calMonth - 1] + ' ' + s.calYear,
       prevCal: () => this.prevCal(),
       nextCal: () => this.nextCal(),
