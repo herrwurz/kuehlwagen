@@ -133,7 +133,6 @@
           <div style="font-size:13px;font-weight:700;color:#eaeff4">{{ sv.name }}</div>
           <div style="font-family:'DM Mono',monospace;font-size:11px;color:#8b97a3;margin-top:1px">{{ sv.kennz }}</div>
           <div style="height:1px;background:#2a3a47;margin:8px 0"></div>
-          <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:3px"><span style="color:#7d8a97">km-Stand</span><span style="font-family:'DM Mono',monospace;color:#cdd6df">{{ sv.km }}</span></div>
           <div style="display:flex;justify-content:space-between;font-size:11.5px"><span style="color:#7d8a97">Reinigung</span><span style="font-family:'DM Mono',monospace;color:#cdd6df">{{ reinigungFmt }}</span></div>
         </div>
       </sc-for>
@@ -344,6 +343,7 @@
           <div style="display:grid;grid-template-columns:90px 1.6fr 1.3fr 1fr 110px 130px;padding:13px 20px;border-bottom:1px solid #eef1f5;font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px;background:#fafbfc">
             <span>Nr.</span><span>Kunde</span><span>Zeitraum</span><span>Anlass</span><span>Betrag</span><span>Status</span>
           </div>
+          <div style="display:{{ noRows }};text-align:center;padding:48px;color:#9aa6b2;font-size:14px">Noch keine Buchungen vorhanden — klicken Sie auf „+ Neue Buchung".</div>
           <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
             <div onClick="{{ r.go }}" style-hover="background:#f6f8fb" style="display:grid;grid-template-columns:90px 1.6fr 1.3fr 1fr 110px 130px;padding:14px 20px;border-bottom:1px solid #f2f4f7;font-size:13.5px;align-items:center;cursor:pointer;transition:background .12s">
               <span style="font-family:'DM Mono',monospace;font-size:12px;color:#8a96a3">{{ r.id }}</span>
@@ -472,23 +472,7 @@
             <button onClick="{{ backToChooser }}" style="background:#fff;border:1px solid #d7dde4;border-radius:9px;padding:8px 13px;font-family:'Hanken Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:#5a6675;cursor:pointer">Abbrechen</button>
           </div>
           <div style="padding:24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
-              <div>
-                <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:7px">{{ kmLabel }}</label>
-                <input value="{{ proto.km }}" onInput="{{ onProto }}" data-field="km" type="number" placeholder="z.B. 45500" style-focus="border-color:#3b82d6" style="width:100%;padding:11px 13px;border:1px solid #d7dde4;border-radius:10px;font-family:'DM Mono',monospace;font-size:14px;color:#1b2733;outline:none;transition:border-color .12s"/>
-                <div style="font-size:12px;color:{{ gefahrenColor }};margin-top:7px;display:{{ gefahrenShow }};font-weight:600">{{ gefahrenText }}</div>
-              </div>
-              <div>
-                <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:7px">Tankfüllung</label>
-                <select value="{{ proto.tank }}" onChange="{{ onProto }}" data-field="tank" style-focus="border-color:#3b82d6" style="width:100%;padding:11px 13px;border:1px solid #d7dde4;border-radius:10px;font-family:'Hanken Grotesk',sans-serif;font-size:14px;color:#1b2733;outline:none;background:#fff;cursor:pointer">
-                  <option value="voll">Voll</option>
-                  <option value="3/4">¾ voll</option>
-                  <option value="1/2">½ voll</option>
-                  <option value="1/4">¼ voll</option>
-                  <option value="reserve">Reserve</option>
-                </select>
-              </div>
-            </div>
+
             <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:7px">Zustand / Anmerkungen</label>
             <textarea value="{{ proto.zustand }}" onInput="{{ onProto }}" data-field="zustand" placeholder="Kratzer, Beschädigungen, Auffälligkeiten …" style-focus="border-color:#3b82d6" style="width:100%;min-height:74px;padding:11px 13px;border:1px solid #d7dde4;border-radius:10px;font-family:'Hanken Grotesk',sans-serif;font-size:14px;color:#1b2733;outline:none;resize:vertical;transition:border-color .12s"></textarea>
             <div style="display:flex;gap:12px;margin-top:18px">
@@ -565,10 +549,7 @@
             <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Ø Auslastung</div>
             <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;margin-top:8px">{{ avgAusl }}%</div>
           </div>
-          <div style="background:#fff;border:1px solid #e6eaef;border-radius:14px;padding:20px">
-            <div style="font-size:11.5px;font-weight:600;color:#8a96a3;text-transform:uppercase;letter-spacing:.5px">Gefahrene km '26</div>
-            <div style="font-family:'DM Mono',monospace;font-size:26px;font-weight:500;margin-top:8px">{{ jahrKm }}</div>
-          </div>
+
         </div>
       </div>
       </sc-if>
@@ -949,7 +930,7 @@
         <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f2f4f7"><span style="font-size:13px;color:#8a96a3">E-Mail</span><span style="font-family:'DM Mono',monospace;font-size:12.5px;color:#3a4854">{{ sel.email }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f2f4f7"><span style="font-size:13px;color:#8a96a3">Preis</span><span style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500">{{ sel.preisFmt }}</span></div>
         <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f2f4f7"><span style="font-size:13px;color:#8a96a3">Kaution</span><span style="font-family:'DM Mono',monospace;font-size:13px;color:#3a4854">{{ sel.kautionFmt }}</span></div>
-        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f2f4f7"><span style="font-size:13px;color:#8a96a3">km gefahren</span><span style="font-family:'DM Mono',monospace;font-size:13px;color:#3a4854">{{ sel.kmText }}</span></div>
+        <div style="display:none"><span style="font-size:13px;color:#8a96a3">km gefahren</span><span style="font-family:'DM Mono',monospace;font-size:13px;color:#3a4854">{{ sel.kmText }}</span></div>
       </div>
       <div style="display:{{ sel.notizShow }};margin-top:14px;background:#f6f8fb;border-radius:11px;padding:13px;font-size:13px;color:#5a6675;line-height:1.5">{{ sel.notiz }}</div>
       <!-- Zusatzpositionen -->
@@ -1160,7 +1141,34 @@ class Component extends DCLogic {
   PALETTE = ['#e05252','#e87848','#f0b030','#c0c830','#60c048','#2ab870','#26b8a8','#2aa8d0','#3a7cd6','#4e60d8','#7e50d8','#b040c8','#d840a0','#e03860','#9e7030','#56788a'];
   VEH_COLORS = ['#3b82d6','#2f9e6a','#d98a2b','#e05252','#7e50d8'];
   get TODAY() { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  history = { months:['Jan','Feb','Mär','Apr','Mai','Jun'], ausl:[38,42,51,60,66,57], umsatz:[980,1120,1360,1615,1870,1445] };
+  get history() {
+    const now = new Date();
+    const months = [];
+    const SHORT = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(SHORT[d.getMonth()]);
+    }
+    const b = this.state ? this.state.bookings || [] : [];
+    const ausl = [], umsatz = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const y = d.getFullYear(), m = d.getMonth();
+      const days = new Date(y, m + 1, 0).getDate();
+      const monthStr = y + '-' + String(m + 1).padStart(2, '0');
+      const monthB = b.filter(bk => bk.status !== 'storniert' && bk.von && bk.von.startsWith(monthStr));
+      const booked = b.filter(bk => bk.status !== 'storniert').reduce((a, bk) => {
+        const lo = new Date(y, m, 1), hi = new Date(y, m + 1, 0);
+        let s = new Date(bk.von), e = new Date(bk.bis);
+        if (e < lo || s > hi) return a;
+        if (s < lo) s = lo; if (e > hi) e = hi;
+        return a + Math.round((e - s) / 86400000) + 1;
+      }, 0);
+      ausl.push(Math.min(100, Math.round(booked / days * 100)));
+      umsatz.push(monthB.reduce((a, bk) => a + (bk.preis || 0), 0));
+    }
+    return { months, ausl, umsatz };
+  }
 
   state = {
     view: 'dashboard',
@@ -1206,9 +1214,9 @@ class Component extends DCLogic {
   };
 
   // ---- helpers ----
-  getVehicles() { return (this.state.stammdaten.vehicles||[{id:'v1',name:'Kühlanhänger 1300',kennz:'IL-KÜHL 1',tagessatz:85,kaution:300,color:'#3b82d6'}]); }
+  getVehicles() { return (this.state.stammdaten.vehicles||[{id:'v1',name:'Kühlkoffer FK300/16 T 2700',kennz:'AM-',tagessatz:0,kaution:0,color:'#3b82d6'}]); }
   getVehicle(id) { return this.getVehicles().find(v=>v.id===id)||this.getVehicles()[0]; }
-  emptyDraft() { const v=this.getVehicles()[0]; return {kunde:'',telefon:'',email:'',grund:'',von:'',bis:'',preis:'',kaution:String(v?.kaution||300),notiz:'',vehicleId:v?.id||'v1'}; }
+  emptyDraft() { const v=this.getVehicles()[0]; return {kunde:'',telefon:'',email:'',grund:'',von:'',bis:'',preis:'',kaution:String(v?.kaution??0),notiz:'',vehicleId:v?.id||'v1'}; }
   parseD(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
   iso(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   fmtD(s) { const [y,m,d]=s.split('-'); return d+'.'+m+'.'; }
@@ -1229,7 +1237,7 @@ class Component extends DCLogic {
   // ---- vehicle mgmt ----
   addVehicle() {
     const c=this.VEH_COLORS[this.getVehicles().length%this.VEH_COLORS.length];
-    const v={id:'v'+Date.now(),name:'Fahrzeug '+(this.getVehicles().length+1),kennz:'',tagessatz:85,kaution:300,color:c};
+    const v={id:'v'+Date.now(),name:'Fahrzeug '+(this.getVehicles().length+1),kennz:'',tagessatz:0,kaution:0,color:c};
     this.setState({stammdaten:{...this.state.stammdaten,vehicles:[...this.getVehicles(),v]}});
     this.toast('Fahrzeug hinzugefügt','ok');
   }
@@ -1254,19 +1262,19 @@ class Component extends DCLogic {
     if((f==='von'||f==='bis')&&d.von&&d.bis){
       const dd=Math.round((this.parseD(d.bis)-this.parseD(d.von))/86400000)+1;
       const veh=this.getVehicle(d.vehicleId);
-      if(dd>0)d.preis=String(dd*(veh?.tagessatz||85));
+      if(dd>0)d.preis=String(dd*(veh?.tagessatz??0));
     }
     if(f==='vehicleId'){const veh=this.getVehicle(v);d.kaution=String(veh?.kaution||300);}
     this.setState({draft:d});
   }
-  nextBookingId() { const max=Math.max.apply(null,this.state.bookings.map(b=>+b.id.split('-')[1])); return 'B-'+(max+1); }
+  nextBookingId() { const nums=this.state.bookings.map(b=>parseInt((b.id||'').split('-')[1])||0).filter(n=>isFinite(n)); const max=nums.length?Math.max.apply(null,nums):2040; return 'B-'+(max+1); }
   submitBooking() {
     const d=this.state.draft;
     if(!d.kunde||!d.von||!d.bis){this.toast('Bitte Kunde und Zeitraum angeben','warn');return;}
     if(this.parseD(d.bis)<this.parseD(d.von)){this.toast('Enddatum vor Startdatum','warn');return;}
     const dd=Math.round((this.parseD(d.bis)-this.parseD(d.von))/86400000)+1;
     const veh=this.getVehicle(d.vehicleId);
-    const nb={id:this.nextBookingId(),kunde:d.kunde,telefon:d.telefon||'—',email:d.email||'',von:d.von,bis:d.bis,grund:d.grund||'—',preis:Number(d.preis)||dd*(veh?.tagessatz||85),kaution:Number(d.kaution)||0,notiz:d.notiz,status:'angefragt',kmRaus:null,kmRein:null,rechnung:null,color:null,vehicleId:d.vehicleId||'v1'};
+    const nb={id:this.nextBookingId(),kunde:d.kunde,telefon:d.telefon||'—',email:d.email||'',von:d.von,bis:d.bis,grund:d.grund||'—',preis:Number(d.preis)||dd*(veh?.tagessatz??0),kaution:Number(d.kaution)||0,notiz:d.notiz,status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:null,vehicleId:d.vehicleId||'v1'};
     this.setState({bookings:[...this.state.bookings,nb],modalOpen:false});
     this.toast('Buchung '+nb.id+' angelegt','ok');
   }
@@ -1289,7 +1297,7 @@ class Component extends DCLogic {
   submitProto(){
     const b=this.state.bookings.find(x=>x.id===this.state.protocolId);
     const km=Number(this.state.proto.km);
-    if(!km){this.toast('Bitte km-Stand eingeben','warn');return;}
+
     const veh=this.getVehicle(b.vehicleId);
     if(this.state.protoPhase==='ausgabe'){
       this.updateBooking(b.id,{kmRaus:km,status:'laufend'});
@@ -1297,7 +1305,7 @@ class Component extends DCLogic {
       this.setState({kmCurrent:km,protocolId:null,view:'buchungen',stammdaten:{...this.state.stammdaten,vehicles:vehs}});
       this.toast('Wagen an '+b.kunde+' übergeben','ok');
     } else {
-      if(km<b.kmRaus){this.toast('km-Stand kleiner als bei Ausgabe','warn');return;}
+
       const ns={kmCurrent:km,protocolId:null,view:'buchungen'};
       if(this.state.proto.sauber)ns.letzteReinigung=this.TODAY;
       const vehs=this.getVehicles().map(v=>v.id===(b.vehicleId||'v1')?{...v,kmCurrent:km}:v);
@@ -1442,7 +1450,7 @@ class Component extends DCLogic {
         clearTimeout(timer);
         if(r.ok){
           this.pb=new window.PocketBase(url);
-          if(this.pb.authStore.isValid){this.setState({loggedIn:true});this.loadFromPB();this.loadAnfragen();setTimeout(()=>this.syncCalendar(),2000);}
+          if(this.pb.authStore.isValid){this.setState({loggedIn:true});this.loadFromPB();this.loadAnfragen();}
         } else { this._initLS(); }
       })
       .catch(e=>{ clearTimeout(timer); if(e&&e.name!=='AbortError')console.warn('PB:',e); this._initLS(); });
@@ -1451,50 +1459,90 @@ class Component extends DCLogic {
   login(){
     if(this.state.loginLoading)return;
     this.setState({loginLoading:true,loginError:''});
+    // Immer frische PB-Instanz erstellen (robust nach Logout)
+    if(!this.pb||!window.PocketBase){
+      if(!window.PocketBase){this.setState({loginError:'PocketBase nicht geladen',loginLoading:false});return;}
+      this.pb=new window.PocketBase(this.PB_URL||window.location.origin);
+    }
     this.pb.collection('users').authWithPassword(this.state.loginEmail,this.state.loginPassword)
-      .then(()=>{this.setState({loggedIn:true,loginLoading:false});this.loadFromPB();this.loadAnfragen();setTimeout(()=>this.syncCalendar(),2000);})
+      .then(()=>{if(!this.pb)return;this.setState({loggedIn:true,loginLoading:false});this.loadFromPB();this.loadAnfragen();})
       .catch(()=>this.setState({loginError:'E-Mail oder Passwort falsch',loginLoading:false}));
   }
   logout(){
-    if(this.pb)this.pb.authStore.clear();
-    this.setState({loggedIn:false,pbRecordId:null});
+    if(this.pb){this.pb.authStore.clear();}
+    // PocketBase Auth aus localStorage entfernen damit kein Auto-Login auf fremden PCs
+    try{localStorage.removeItem('pocketbase_auth');}catch(e){}
+    this.setState({loggedIn:false,pbRecordId:null,anfragen:[]});
   }
   loadFromPB(){
-    this.pb.collection('kw_state').getList(1,1)
+    if(!this.pb)return;
+    this.pb.collection('kw_state').getList(1,100)
       .then(res=>{
-        if(res.items.length>0){
-          const d=res.items[0].data,ns={pbRecordId:res.items[0].id};
-          if(d&&d.bookings){
-            ns.bookings=d.bookings;ns.kmCurrent=d.kmCurrent||this.state.kmCurrent;ns.letzteReinigung=d.letzteReinigung||this.state.letzteReinigung;
-            if(d.stammdaten){let st={...this.state.stammdaten,...d.stammdaten};if(!st.vehicles&&st.vehName)st.vehicles=[{id:'v1',name:st.vehName,kennz:st.vehKennz||'',tagessatz:st.tagessatz||85,kaution:st.kaution||300,color:'#3b82d6'}];ns.stammdaten=st;}
-            if(d.wartung)ns.wartung=d.wartung;
-            if(d.invoiceExtras)ns.invoiceExtras=d.invoiceExtras;
-          }
+        if(!this.pb)return;
+        const items=res.items||[];
+        // Eintrag mit den meisten Buchungen wählen
+        let best=null,bestCount=-1;
+        for(const item of items){
+          let d=item.data;
+          if(typeof d==='string'){try{d=JSON.parse(d);}catch(e){d={};}}
+          const cnt=Array.isArray(d?.bookings)?d.bookings.length:0;
+          if(cnt>bestCount){bestCount=cnt;best={d:d||{},id:item.id};}
+          else if(!best){best={d:d||{},id:item.id};}
+        }
+        if(best){
+          const d=best.d,ns={pbRecordId:best.id};
+          // Robustes Parsing — alle möglichen Formate abdecken
+          let bks=d.bookings;
+          if(typeof bks==='string'){try{bks=JSON.parse(bks);}catch(e){bks=[];}}
+          // sessionStorage lesen
+          let ssBookings=[];
+          try{const ss=JSON.parse(sessionStorage.getItem('kw-verleih-v1')||'{}');if(Array.isArray(ss.bookings))ssBookings=ss.bookings;}catch(e){}
+          // Beste Quelle wählen: mehr Buchungen gewinnt
+          const pbCount=Array.isArray(bks)?bks.length:0;
+          const ssCount=ssBookings.length;
+          if(ssCount>pbCount){ns.bookings=ssBookings;this._pbDebug='SS:'+ssCount+'>PB:'+pbCount;}
+          else if(pbCount>0){ns.bookings=bks;}
+          // Debug-Info anzeigen
+          const lsRaw=sessionStorage.getItem('kw-verleih-v1');
+          const lsD=JSON.parse(lsRaw||'{}');
+          const lsB=Array.isArray(lsD.bookings)?lsD.bookings.length:'?';
+          this._pbDebug='PB:'+(Array.isArray(bks)?bks.length:0)+' LS:'+lsB+' ST:'+this.state.bookings.length;
+          if(d.kmCurrent)ns.kmCurrent=d.kmCurrent;
+          if(d.letzteReinigung)ns.letzteReinigung=d.letzteReinigung;
+          if(d.stammdaten){let st={...this.state.stammdaten,...d.stammdaten};if(!st.vehicles&&st.vehName)st.vehicles=[{id:'v1',name:st.vehName,kennz:st.vehKennz||'',tagessatz:st.tagessatz??0,kaution:st.kaution??0,color:'#3b82d6'}];ns.stammdaten=st;}
+          if(Array.isArray(d.wartung)&&d.wartung.length>0)ns.wartung=d.wartung;
+          if(d.invoiceExtras&&d.invoiceExtras.length>0)ns.invoiceExtras=d.invoiceExtras;
           this.setState(ns);
+          setTimeout(()=>{ if(this.pb)this.syncCalendar(); },1500);
         } else {
-          this.pb.collection('kw_state').create({data:this._pbData()}).then(r=>this.setState({pbRecordId:r.id}));
+          if(!this.pb)return;
+          this.pb.collection('kw_state').create({data:this._pbData()}).then(r=>{if(this.pb){this.setState({pbRecordId:r.id});setTimeout(()=>this.saveToPB(),200);}});
         }
       }).catch(e=>console.warn('PB load:',e));
   }
   saveToPB(){
     if(this._resetMode)return;
+    // localStorage IMMER speichern (auch im Offline-Modus)
+    try{sessionStorage.setItem('kw-verleih-v1',JSON.stringify(this._pbData()));}catch(e){}
+    if(!this.pb)return;
     clearTimeout(this._pbT);
+    // Wenn pbRecordId noch nicht gesetzt, 600ms warten und nochmal versuchen
+    if(!this.state.pbRecordId){
+      this._pbT=setTimeout(()=>this.saveToPB(),600);
+      return;
+    }
     this._pbT=setTimeout(()=>{
-      if(!this.pb){
-        try{localStorage.setItem('kw-verleih-v1',JSON.stringify(this._pbData()));}catch(e){}
-        return;
-      }
-      if(!this.state.loggedIn||!this.state.pbRecordId)return;
+      if(!this.pb||!this.state.loggedIn||!this.state.pbRecordId)return;
       this.setState({syncing:true});
       this.pb.collection('kw_state').update(this.state.pbRecordId,{data:this._pbData()})
-        .then(()=>{this.setState({syncing:false});this.syncCalendar();})
-        .catch(()=>this.setState({syncing:false}));
-    },1200);
+        .then(()=>{this._pbDebug=(this._pbDebug||'')+'|OK:'+this.state.bookings.length;if(this.pb){this.setState({syncing:false});this.syncCalendar();}})
+        .catch(e=>{this._pbDebug=(this._pbDebug||'')+'|ERR:'+JSON.stringify(e).slice(0,30);if(this.pb)this.setState({syncing:false});});
+    },300);
   }
   _pbData(){const s=this.state;return{bookings:s.bookings,kmCurrent:s.kmCurrent,letzteReinigung:s.letzteReinigung,stammdaten:s.stammdaten,wartung:s.wartung,invoiceExtras:s.invoiceExtras};}
   _loadFromLS(){
     try{
-      const raw=localStorage.getItem('kw-verleih-v1');
+      const raw=sessionStorage.getItem('kw-verleih-v1');
       if(raw){
         const d=JSON.parse(raw);
         if(d&&d.bookings){
@@ -1586,12 +1634,16 @@ class Component extends DCLogic {
     if(window.innerWidth<=800)this.setState({sidebarOpen:false});
     this._resize=()=>this.forceUpdate();
     window.addEventListener('resize',this._resize);
+    this._beforeUnload=()=>{ try{sessionStorage.setItem('kw-verleih-v1',JSON.stringify(this._pbData()));}catch(e){} };
+    window.addEventListener('beforeunload',this._beforeUnload);
     this.initPB();
     this._anfragenInterval = setInterval(() => { if(this.state.loggedIn) this.loadAnfragen(); }, 2 * 60 * 1000);
   }
-  componentWillUnmount(){window.removeEventListener('resize',this._resize);clearTimeout(this._pbT);clearInterval(this._anfragenInterval);}
+  componentWillUnmount(){window.removeEventListener('resize',this._resize);window.removeEventListener('beforeunload',this._beforeUnload);clearTimeout(this._pbT);clearInterval(this._anfragenInterval);}
   componentDidUpdate(pp,ps){
     const s=this.state;
+    // Sofort speichern wenn pbRecordId gesetzt wird und Daten vorhanden
+    if(!ps.pbRecordId&&s.pbRecordId&&s.bookings.length>0){this.saveToPB();return;}
     if(ps.bookings!==s.bookings||ps.kmCurrent!==s.kmCurrent||ps.letzteReinigung!==s.letzteReinigung||ps.stammdaten!==s.stammdaten||ps.wartung!==s.wartung||ps.invoiceExtras!==s.invoiceExtras){
       this.saveToPB();
     }
@@ -1700,7 +1752,7 @@ class Component extends DCLogic {
 
   // ---- Online-Anfragen ----
   loadAnfragen(){
-    if(!this.pb||!this.state.loggedIn)return;
+    if(!this.pb||!this.state.loggedIn||!this.pb.authStore?.isValid)return;
     this.pb.collection('kw_booking_requests').getList(1,100,{sort:'-created'})
       .then(res=>this.setState({anfragen:res.items||[]}))
       .catch(()=>{});
@@ -1713,7 +1765,7 @@ class Component extends DCLogic {
     const veh=this.getVehicles()[0];
     const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'',email:a.email||'',von,bis,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz||85),kaution:veh?.kaution||300,notiz:'Online-Anfrage',status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
     this.setState({bookings:[...this.state.bookings,nb]});
-    this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>this.loadAnfragen()).catch(()=>{});
+    this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>{this.loadAnfragen();this.syncCalendar();}).catch(()=>{});
     this.toast('Anfrage genehmigt – Buchung '+nb.id+' angelegt','ok');
   }
   openReject(id){this.setState({rejectId:id,rejectNote:''});}
@@ -1729,7 +1781,7 @@ class Component extends DCLogic {
     if(!this.pb||!this.state.loggedIn)return;
     const ranges=this.state.bookings.filter(b=>b.status!=='storniert').map(b=>({from:b.von,to:b.bis}));
     this.pb.collection('kw_calendar').getList(1,1)
-      .then(res=>{if(res.items.length>0)return this.pb.collection('kw_calendar').update(res.items[0].id,{data:ranges});return this.pb.collection('kw_calendar').create({data:ranges});})
+      .then(res=>{if(!this.pb)return;if(res.items.length>0)return this.pb.collection('kw_calendar').update(res.items[0].id,{data:ranges});return this.pb.collection('kw_calendar').create({data:ranges});})
       .catch(()=>{});
   }
 
@@ -1838,8 +1890,8 @@ class Component extends DCLogic {
     // Draft
     let draftDaysText='Zeitraum wählen für Preisberechnung';
     const draftVeh=this.getVehicle(s.draft.vehicleId);
-    let draftRate=this.money(draftVeh?.tagessatz||85)+' / Tag';
-    if(s.draft.von&&s.draft.bis){const dd=Math.round((this.parseD(s.draft.bis)-this.parseD(s.draft.von))/86400000)+1;if(dd>0)draftDaysText=dd+' Tage × '+this.money(draftVeh?.tagessatz||85);}
+    let draftRate=this.money(draftVeh?.tagessatz??0)+' / Tag';
+    if(s.draft.von&&s.draft.bis){const dd=Math.round((this.parseD(s.draft.bis)-this.parseD(s.draft.von))/86400000)+1;if(dd>0)draftDaysText=dd+' Tage × '+this.money(draftVeh?.tagessatz??0);}
 
     // Calendar / Belegung
     const bf=s.belFilter,bo=s.belOffset;
@@ -1887,7 +1939,7 @@ class Component extends DCLogic {
     const jahrKm=s.kmCurrent-44900;
 
     // Stammdaten refs
-    const pv=vehs[0]||{name:'',kennz:'',tagessatz:85};
+    const pv=vehs[0]||{name:'',kennz:'',tagessatz:0};
 
     // Print invoice
     const printB=s.printInvoiceId?b.find(x=>x.id===s.printInvoiceId):null;
@@ -1971,7 +2023,7 @@ class Component extends DCLogic {
       setBelJahr:()=>this.setState({belFilter:'jahr',belOffset:0}),
       belPrev:()=>this.belPrev(),belNext:()=>this.belNext(),belToday:()=>this.belToday(),
       // buchungen
-      rows,
+      rows,noRows:rows.length?'none':'block',
       // kunden
       kundenRows,noKunden:kundenRows.length?'none':'block',
       // übergabe
@@ -1979,7 +2031,7 @@ class Component extends DCLogic {
       // rechnungen
       invoiceRows,noInvoices:invoiceRows.length?'none':'block',
       // statistik
-      auslastungChartEl:this.barChart(this.history.ausl,'#3b82d6',v=>v+'%'),umsatzChartEl:this.barChart(this.history.umsatz,'#2f9e6a',v=>'€'+(v/1000).toFixed(1)+'k'),jahrUmsatz:this.money(jahrUmsatz),avgAusl,jahrKm:jahrKm.toLocaleString('de-DE')+' km',
+      auslastungChartEl:this.barChart(this.history.ausl,'#3b82d6',v=>v+'%'),umsatzChartEl:this.barChart(this.history.umsatz,'#2f9e6a',v=>v===0?'€0':'€'+(v/1000).toFixed(1)+'k'),jahrUmsatz:this.money(jahrUmsatz),avgAusl,jahrKm:jahrKm.toLocaleString('de-DE')+' km',
       // wartung
       wartungRows,noWartung:wartungRows.length?'none':'block',wartungDraft:s.wartungDraft,onWartungDraft:e=>this.onWartungDraft(e),addWartung:()=>this.addWartung(),wartDescGrid:multiVehicle?'1fr 2fr':'1fr',
       // modal
