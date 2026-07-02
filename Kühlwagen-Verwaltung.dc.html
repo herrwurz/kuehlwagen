@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
+<script src="/support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -41,7 +41,9 @@
 <div style="position:fixed;inset:0;background:#eef2f7;display:flex;align-items:center;justify-content:center;z-index:100;font-family:'Hanken Grotesk',sans-serif">
   <div style="width:400px;background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(20,32,41,.15);padding:40px">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:32px">
-      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(150deg,#3b82d6,#2c63b0);display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0">❄</div>
+      <div style="width:48px;height:48px;border-radius:14px;background:#142029;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <img src="/uploads/logo-weiss-transparent-1000.gif" style="height:36px;width:auto;display:block">
+      </div>
       <div>
         <div style="font-size:20px;font-weight:800;color:#142029;letter-spacing:-.3px">Kühlwagen</div>
         <div style="font-size:12.5px;color:#7d8a97;font-weight:500">Verleih-Verwaltung</div>
@@ -1272,6 +1274,9 @@ class Component extends DCLogic {
     const d=this.state.draft;
     if(!d.kunde||!d.von||!d.bis){this.toast('Bitte Kunde und Zeitraum angeben','warn');return;}
     if(this.parseD(d.bis)<this.parseD(d.von)){this.toast('Enddatum vor Startdatum','warn');return;}
+    const dvD=this.parseD(d.von),dbD=this.parseD(d.bis);
+    const conflict=this.state.bookings.filter(b=>b.status!=='storniert'&&b.id!==d.editId).find(b=>dvD<=this.parseD(b.bis)&&dbD>=this.parseD(b.von));
+    if(conflict){this.toast('Zeitraum überschneidet Buchung '+conflict.id+' ('+conflict.kunde+')','warn');return;}
     const dd=Math.round((this.parseD(d.bis)-this.parseD(d.von))/86400000)+1;
     const veh=this.getVehicle(d.vehicleId);
     const nb={id:this.nextBookingId(),kunde:d.kunde,telefon:d.telefon||'—',email:d.email||'',von:d.von,bis:d.bis,grund:d.grund||'—',preis:Number(d.preis)||dd*(veh?.tagessatz??0),kaution:Number(d.kaution)||0,notiz:d.notiz,status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:null,vehicleId:d.vehicleId||'v1'};
@@ -1449,8 +1454,9 @@ class Component extends DCLogic {
       .then(r=>{
         clearTimeout(timer);
         if(r.ok){
+          try{localStorage.removeItem('pocketbase_auth');}catch(e){}
           this.pb=new window.PocketBase(url);
-          if(this.pb.authStore.isValid){this.setState({loggedIn:true});this.loadFromPB();this.loadAnfragen();}
+          // Auth wird NICHT aus localStorage wiederhergestellt — Login immer erforderlich
         } else { this._initLS(); }
       })
       .catch(e=>{ clearTimeout(timer); if(e&&e.name!=='AbortError')console.warn('PB:',e); this._initLS(); });
@@ -1472,6 +1478,7 @@ class Component extends DCLogic {
     if(this.pb){this.pb.authStore.clear();}
     // PocketBase Auth aus localStorage entfernen damit kein Auto-Login auf fremden PCs
     try{localStorage.removeItem('pocketbase_auth');}catch(e){}
+    try{sessionStorage.removeItem('kw-verleih-v1');}catch(e){}
     this.setState({loggedIn:false,pbRecordId:null,anfragen:[]});
   }
   loadFromPB(){
@@ -1518,7 +1525,7 @@ class Component extends DCLogic {
           if(!this.pb)return;
           this.pb.collection('kw_state').create({data:this._pbData()}).then(r=>{if(this.pb){this.setState({pbRecordId:r.id});setTimeout(()=>this.saveToPB(),200);}});
         }
-      }).catch(e=>console.warn('PB load:',e));
+      }).catch(e=>{console.warn('PB load:',e);this._loadFromLS();this.toast('Verbindungsfehler – lokale Daten geladen','warn');});
   }
   saveToPB(){
     if(this._resetMode)return;
@@ -1536,7 +1543,7 @@ class Component extends DCLogic {
       this.setState({syncing:true});
       this.pb.collection('kw_state').update(this.state.pbRecordId,{data:this._pbData()})
         .then(()=>{this._pbDebug=(this._pbDebug||'')+'|OK:'+this.state.bookings.length;if(this.pb){this.setState({syncing:false});this.syncCalendar();}})
-        .catch(e=>{this._pbDebug=(this._pbDebug||'')+'|ERR:'+JSON.stringify(e).slice(0,30);if(this.pb)this.setState({syncing:false});});
+        .catch(e=>{this._pbDebug=(this._pbDebug||'')+'|ERR:'+JSON.stringify(e).slice(0,30);if(this.pb){this.setState({syncing:false});this.toast('Speichern fehlgeschlagen – Verbindung prüfen','warn');}});
     },300);
   }
   _pbData(){const s=this.state;return{bookings:s.bookings,kmCurrent:s.kmCurrent,letzteReinigung:s.letzteReinigung,stammdaten:s.stammdaten,wartung:s.wartung,invoiceExtras:s.invoiceExtras};}
@@ -1583,6 +1590,7 @@ class Component extends DCLogic {
     // Alle bekannten localStorage Keys löschen
     ['kw-verleih-v1','kw-verleih-kunden','kw-verleih-vehicles','kw-pb-url'].forEach(k => localStorage.removeItem(k));
     localStorage.clear();
+    try{sessionStorage.removeItem('kw-verleih-v1');}catch(e){}
     alert('Alle Daten gelöscht! Bitte jetzt neu einloggen.');
     window.location.reload();
   }
@@ -1759,13 +1767,15 @@ class Component extends DCLogic {
   }
   approveAnfrage(id){
     const a=this.state.anfragen.find(x=>x.id===id);
-    if(!a)return;
-    const von=a.from_date,bis=a.to_date;
-    const dd=Math.round((this.parseD(bis)-this.parseD(von))/86400000)+1;
+    if(!a||a.status==='approved'||a.status==='rejected')return;
+    if(this._approvingId===id)return;
+    this._approvingId=id;
+    const fromDate=a.from_date,toDate=a.to_date;
+    const dd=Math.round((this.parseD(toDate)-this.parseD(fromDate))/86400000)+1;
     const veh=this.getVehicles()[0];
-    const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'',email:a.email||'',von,bis,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz||85),kaution:veh?.kaution||300,notiz:'Online-Anfrage',status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
+    const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'',email:a.email||'',von:fromDate,bis:toDate,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz??0),kaution:veh?.kaution??0,notiz:'Online-Anfrage',status:'bestätigt',_mailSent:true,kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
     this.setState({bookings:[...this.state.bookings,nb]});
-    this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>{this.loadAnfragen();this.syncCalendar();}).catch(()=>{});
+    this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>{this._approvingId=null;this.loadAnfragen();this.syncCalendar();}).catch(()=>{this._approvingId=null;});
     this.toast('Anfrage genehmigt – Buchung '+nb.id+' angelegt','ok');
   }
   openReject(id){this.setState({rejectId:id,rejectNote:''});}
@@ -1779,7 +1789,7 @@ class Component extends DCLogic {
   }
   syncCalendar(){
     if(!this.pb||!this.state.loggedIn)return;
-    const ranges=this.state.bookings.filter(b=>b.status!=='storniert').map(b=>({from:b.von,to:b.bis}));
+    const ranges=this.state.bookings.filter(b=>b.status!=='storniert'&&b.status!=='abgeschlossen').map(b=>({from:b.von,to:b.bis}));
     this.pb.collection('kw_calendar').getList(1,1)
       .then(res=>{if(!this.pb)return;if(res.items.length>0)return this.pb.collection('kw_calendar').update(res.items[0].id,{data:ranges});return this.pb.collection('kw_calendar').create({data:ranges});})
       .catch(()=>{});

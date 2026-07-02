@@ -1,5 +1,59 @@
 # Kühlwagen-Verwaltungssystem — Projektnotizen
 
+## Arbeitsweise / Workflow (Stand 02.07.2026)
+
+**Zwei gleichwertige Wege — beide enden bei deploy.bat:**
+
+**Weg 1: Code-Fixes (VS Code)**
+1. `.dc.html` in VS Code (`Downloads\kuehlwagen\`) bearbeiten
+2. `deploy.bat` ausführen → DC-Dateien + `support.js` direkt auf Server
+
+**Weg 2: UI-Änderungen (Claude)**
+1. `.dc.html` in Claude Design Editor bearbeiten
+2. Geänderte DC-Datei herunterladen → in `kuehlwagen`-Ordner legen
+3. `deploy.bat` ausführen
+
+**Kein Standalone-Export mehr nötig!** `deploy.ps1` deployed die DC-Dateien direkt zusammen mit `support.js`.
+
+**Wichtig:** `support.js` muss im `kuehlwagen`-Ordner liegen und bei Claude-Updates synchronisiert werden.
+
+**Datei-Upload zu Claude:** Geänderte DC-Datei per Drag & Drop in den Chat ziehen → Claude übernimmt sie und kann weiter bearbeiten.
+
+---
+
+## Bekannte Fixes & Entscheidungen (Stand 02.07.2026)
+
+### Deploy-Script (deploy.ps1)
+- Sucht DC-Dateien im Repo-Ordner per Glob (umgeht Umlaut-Encoding-Probleme)
+- Deployed auch `support.js` (zwingend erforderlich für DC-Dateien)
+- Logo (`uploads/logo-weiss-transparent-1000.gif`) wird automatisch deployed → landet in `/pb_public/uploads/`
+- **SSH-Key einrichten:** `setup-ssh-key.ps1` einmalig ausführen → kein Passwort mehr bei deploy.bat
+- `support.js` Pfad: `/support.js` (absolut) — nicht `./support.js` (führt zu falschem Pfad bei index.html)
+
+### Konfliktcheck (Doppelbuchungen)
+- `submitBooking` (manuelle Buchung): prüft gegen bestehende Buchungen mit `parseD()` (nicht String-Vergleich!)
+- `approveAnfrage` (Online-Anfrage genehmigen): prüft ebenfalls mit `parseD()`
+- String-Vergleich war fehlerhaft bei Datumsformaten ohne führende Null
+
+### Tagessatz
+- Default ist `??0` (nicht `||85`) — `||` würde bei Tagessatz=0 auf 85 fallen
+
+### Logo / uploads
+- Logo liegt in `kuehlwagen/uploads/logo-weiss-transparent-1000.gif`
+- Server-Pfad: `/pb_public/uploads/logo-weiss-transparent-1000.gif`
+- Unnötige Dateien am Server löschen: `docker exec $CONTAINER sh -c 'rm -f /pb_public/uploads/pasted-*'`
+
+### PocketBase Reset
+- `resetAllData()` löscht Bookings/Calendar/Anfragen in PocketBase + localStorage/sessionStorage
+- `kw_state` Record bleibt erhalten (Inhalt wird geleert) — ist so gewollt
+- `kw_calendar` Record bleibt erhalten (data leer) — ist ok
+
+### Login
+- `localStorage.removeItem('pocketbase_auth')` vor `new PocketBase()` → kein Auto-Login
+- `this.pb` nach Logout NICHT auf null setzen — nur `authStore.clear()`
+
+---
+
 ## Deployment-Status (Stand 01.07.2026)
 
 ### App-URLs

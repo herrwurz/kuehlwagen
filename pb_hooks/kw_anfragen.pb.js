@@ -153,10 +153,13 @@ onRecordAfterUpdateSuccess((e) => {
   try { data = JSON.parse(r.getString("data")); } catch(ex) { return; }
   if (!data || !data.bookings) return;
 
-  // Bestätigte Buchungen mit E-Mail finden
+  // Bestätigte Buchungen mit E-Mail finden (noch keine Mail gesendet)
   const confirmed = data.bookings.filter(b =>
     b.status === "bestätigt" && b.email && b._mailSent !== true
   );
+
+  // Nichts zu tun → früh beenden (verhindert auch Endlosschleife nach dem Zurückspeichern)
+  if (confirmed.length === 0) return;
 
   for (const b of confirmed) {
     const htmlMail = `
@@ -203,8 +206,20 @@ onRecordAfterUpdateSuccess((e) => {
         html: htmlMail
       }));
       console.log("kw_buchung: Bestätigungsmail gesendet an", b.email);
+      b._mailSent = true; // In-Memory markieren (ändert auch data.bookings)
     } catch (err) {
       console.error("kw_buchung: Fehler beim Mail-Versand:", err);
+      // _mailSent bleibt false → nächster Versuch beim nächsten Save
     }
+  }
+
+  // _mailSent:true zurück nach PocketBase speichern
+  // Der Hook feuert dann nochmal, aber confirmed ist leer → return oben greift
+  try {
+    const fresh = $app.dao().findRecordById("kw_state", r.id);
+    fresh.set("data", data);
+    $app.dao().saveRecord(fresh);
+  } catch (saveErr) {
+    console.error("kw_buchung: Fehler beim Speichern von _mailSent:", saveErr);
   }
 }, "kw_state");
