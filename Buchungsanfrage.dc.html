@@ -114,6 +114,7 @@
     <div style="display:flex;align-items:center;gap:18px;margin-top:16px;padding-top:14px;border-top:1px solid #f0f2f5;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#f0f9f4;border:1px solid #b8dfcb"></div>Verfügbar</div>
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#fbecec;border:1px solid #e8bcbb"></div>Belegt</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#fdf3e6;border:1px solid #f5c49a"></div>Angefragt</div>
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#3b82d6"></div>Ausgewählt</div>
       <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6675"><div style="width:14px;height:14px;border-radius:4px;background:#e9f1fb;border:1px solid #c8d9f0"></div>Zeitraum</div>
     </div>
@@ -157,11 +158,11 @@
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Von (Datum) *</label>
-        <input value="{{ form.fromDate }}" onInput="{{ onFromDate }}" type="date" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+        <input value="{{ form.fromDate }}" onInput="{{ onFromDate }}" type="date" style="width:100%;padding:11px 13px;border:{{ fromBorder }};border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
       </div>
       <div>
         <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Bis (Datum) *</label>
-        <input value="{{ form.toDate }}" onInput="{{ onToDate }}" type="date" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
+        <input value="{{ form.toDate }}" onInput="{{ onToDate }}" type="date" style="width:100%;padding:11px 13px;border:{{ toBorder }};border-radius:10px;font-size:14px;color:#1b2733;transition:border-color .12s"/>
       </div>
       <div style="grid-column:span 2">
         <label style="display:block;font-size:12px;font-weight:600;color:#5a6675;margin-bottom:6px">Verwendungszweck <span style="color:#b0b8c4;font-weight:400">(optional)</span></label>
@@ -172,6 +173,8 @@
         <textarea value="{{ form.message }}" onInput="{{ onMessage }}" placeholder="Weitere Informationen oder Fragen …" rows="3" style="width:100%;padding:11px 13px;border:1.5px solid #d7dde4;border-radius:10px;font-size:14px;color:#1b2733;resize:vertical;transition:border-color .12s"></textarea>
       </div>
     </div>
+
+    <div style="display:{{ conflictDisplay }};background:#fbecec;border:1px solid #e8bcbb;border-radius:9px;padding:11px 14px;margin-top:16px;font-size:13px;color:#9a3b38;font-weight:500">{{ conflictMsg }}</div>
 
     <div style="display:{{ errorDisplay }};background:#fbecec;border:1px solid #e8bcbb;border-radius:9px;padding:11px 14px;margin-top:16px;font-size:13px;color:#9a3b38">{{ errorMsg }}</div>
 
@@ -204,7 +207,7 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.loadBusyDates();
-    this._refreshInterval = setInterval(() => this.loadBusyDates(), 5 * 60 * 1000);
+    this._refreshInterval = setInterval(() => this.loadBusyDates(), 90 * 1000);
   }
 
   componentWillUnmount() {
@@ -212,7 +215,8 @@ class Component extends DCLogic {
   }
 
   loadBusyDates() {
-    const url = (this.props.pbUrl || this.PB_URL) + '/api/collections/kw_calendar/records?perPage=1';
+    // Neuesten Datensatz deterministisch laden (falls mehrere kw_calendar-Records existieren)
+    const url = (this.props.pbUrl || this.PB_URL) + '/api/collections/kw_calendar/records?perPage=1&sort=-updated';
     fetch(url)
       .then(r => r.json())
       .then(data => {
@@ -240,13 +244,29 @@ class Component extends DCLogic {
       return fromDate <= rTo && rFrom <= toDate;
     });
   }
+  hasRequestedConflict(fromDate, toDate) {
+    return this.state.busyRanges.some(r => {
+      if ((r.type || 'booked') !== 'requested') return false;
+      const rFrom = r.from || r.von || '';
+      const rTo   = r.to   || r.bis || '';
+      if (!rFrom || !rTo) return false;
+      return fromDate <= rTo && rFrom <= toDate;
+    });
+  }
 
   today() { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   fmtDate(s) { if(!s) return ''; const [y,m,d] = s.split('-'); return d+'.'+m+'.'+y.slice(2); }
 
-  isDateBusy(dateStr) {
-    return this.state.busyRanges.some(r => dateStr >= (r.from||r.von||'') && dateStr <= (r.to||r.bis||''));
+  getDateStatus(dateStr) {
+    for (const r of this.state.busyRanges) {
+      const rFrom = r.from || r.von || '';
+      const rTo   = r.to   || r.bis || '';
+      if (!rFrom || !rTo) continue;
+      if (dateStr >= rFrom && dateStr <= rTo) return r.type || 'booked';
+    }
+    return null;
   }
+  isDateBusy(dateStr) { return !!this.getDateStatus(dateStr); }
 
   buildCalDays(year, month) {
     const tod = this.today();
@@ -269,9 +289,12 @@ class Component extends DCLogic {
       const isInRange = s.selFrom && s.selTo && dateStr > s.selFrom && dateStr < s.selTo;
       const disabled = isPast || isBusy;
 
+      const dateStatus = this.getDateStatus(dateStr);
+      const isRequested = dateStatus === 'requested';
       let bg, color, border = '1px solid transparent', hoverStyle = '';
       if (isStart || isEnd) { bg = '#3b82d6'; color = '#fff'; }
       else if (isInRange) { bg = '#e9f1fb'; color = '#1b5fb8'; }
+      else if (isRequested) { bg = '#fdf3e6'; color = '#d98a2b'; }
       else if (isBusy) { bg = '#fbecec'; color = '#c25450'; }
       else if (isPast) { bg = '#f6f8fb'; color = '#c8d0d8'; }
       else { bg = '#f0f9f4'; color = '#1d6e48'; hoverStyle = 'filter:brightness(.94)'; }
@@ -323,13 +346,20 @@ class Component extends DCLogic {
   submitForm() {
     const s = this.state;
     const f = s.form;
+    // Doppel-Submit verhindern (z.B. Doppelklick)
+    if (s.submitting) return;
+    // Absenden erst wenn Verfügbarkeit geladen ist
+    if (!s.calLoaded) { this.setState({ errorMsg: 'Verfügbarkeit wird noch geladen. Bitte einen Moment warten und erneut versuchen.' }); return; }
     if (!f.name.trim()) { this.setState({ errorMsg: 'Bitte geben Sie Ihren Namen ein.' }); return; }
     if (!f.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) { this.setState({ errorMsg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein (z.B. name@beispiel.at).' }); return; }
     if (!f.fromDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Startdatum (im Kalender oder im Feld „Von").' }); return; }
     if (!f.toDate) { this.setState({ errorMsg: 'Bitte wählen Sie ein Enddatum (im Kalender oder im Feld „Bis").' }); return; }
     if (f.toDate < f.fromDate) { this.setState({ errorMsg: 'Das Enddatum muss nach dem Startdatum liegen.' }); return; }
     if (!this.isRangeAvailable(f.fromDate, f.toDate)) {
-      this.setState({ errorMsg: 'Der gewählte Zeitraum ist leider nicht verfügbar. Bitte wählen Sie einen anderen Termin.' });
+      const msg = this.hasRequestedConflict(f.fromDate, f.toDate)
+        ? 'Für diesen Zeitraum liegt bereits eine Buchungsanfrage vor. Bitte wählen Sie einen anderen Termin.'
+        : 'Der gewählte Zeitraum ist leider nicht verfügbar. Bitte wählen Sie einen anderen Termin.';
+      this.setState({ errorMsg: msg });
       return;
     }
     if (!window.PocketBase) { this.setState({ errorMsg: 'Verbindungsfehler. Bitte Seite neu laden.' }); return; }
@@ -342,6 +372,8 @@ class Component extends DCLogic {
       purpose: f.purpose, message: f.message, status: 'pending'
     }).then(() => {
       this.setState({ submitted: true, submitting: false, successName: f.name, successVon: this.fmtDate(f.fromDate), successBis: this.fmtDate(f.toDate) });
+      // Kalender direkt neu laden, damit der neue requested-Eintrag sofort sichtbar ist
+      this.loadBusyDates();
     }).catch(() => {
       this.setState({ submitting: false, errorMsg: 'Fehler beim Senden. Bitte versuchen Sie es erneut.' });
     });
@@ -350,6 +382,21 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const calDays = this.buildCalDays(s.calYear, s.calMonth);
+
+    // Konflikt-Erkennung für rote Datumsfelder
+    const f = s.form;
+    const fromBusy = f.fromDate ? this.isDateBusy(f.fromDate) : false;
+    const toBusy   = f.toDate ? this.isDateBusy(f.toDate) : false;
+    const rangeConflict = (f.fromDate && f.toDate && f.toDate >= f.fromDate) ? !this.isRangeAvailable(f.fromDate, f.toDate) : false;
+    const fromRed = fromBusy || rangeConflict;
+    const toRed   = toBusy || rangeConflict;
+    const RED = '1.5px solid #c25450', NORMAL = '1.5px solid #d7dde4';
+    let conflictMsg = '';
+    if (rangeConflict || fromBusy || toBusy) {
+      conflictMsg = this.hasRequestedConflict(f.fromDate || f.toDate, f.toDate || f.fromDate)
+        ? 'Für diesen Zeitraum liegt bereits eine Anfrage vor — bitte anderen Termin wählen.'
+        : 'Der gewählte Zeitraum ist nicht verfügbar — bitte anderen Termin wählen.';
+    }
 
     let selLabel = '', selHint = '';
     if (s.selFrom && s.selTo) {
@@ -385,6 +432,10 @@ class Component extends DCLogic {
       onMessage: e => this.setState({ form: { ...s.form, message: e.target.value } }),
       errorMsg: s.errorMsg,
       errorDisplay: s.errorMsg ? 'block' : 'none',
+      fromBorder: fromRed ? RED : NORMAL,
+      toBorder: toRed ? RED : NORMAL,
+      conflictMsg,
+      conflictDisplay: conflictMsg ? 'block' : 'none',
       submitLabel: s.submitting ? 'Wird gesendet …' : 'Anfrage absenden →',
       submitForm: () => this.submitForm()
     };

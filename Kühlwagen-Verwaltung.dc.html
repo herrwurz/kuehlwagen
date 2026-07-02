@@ -1277,6 +1277,8 @@ class Component extends DCLogic {
     const dvD=this.parseD(d.von),dbD=this.parseD(d.bis);
     const conflict=this.state.bookings.filter(b=>b.status!=='storniert'&&b.id!==d.editId).find(b=>dvD<=this.parseD(b.bis)&&dbD>=this.parseD(b.von));
     if(conflict){this.toast('Zeitraum überschneidet Buchung '+conflict.id+' ('+conflict.kunde+')','warn');return;}
+    const anfConflict=this.state.anfragen.filter(a=>a.status==='pending').find(a=>dvD<=this.parseD(a.to_date)&&dbD>=this.parseD(a.from_date));
+    if(anfConflict){if(!window.confirm('Achtung: Es gibt eine offene Anfrage von '+anfConflict.name+' für diesen Zeitraum. Trotzdem buchen?'))return;}
     const dd=Math.round((this.parseD(d.bis)-this.parseD(d.von))/86400000)+1;
     const veh=this.getVehicle(d.vehicleId);
     const nb={id:this.nextBookingId(),kunde:d.kunde,telefon:d.telefon||'—',email:d.email||'',von:d.von,bis:d.bis,grund:d.grund||'—',preis:Number(d.preis)||dd*(veh?.tagessatz??0),kaution:Number(d.kaution)||0,notiz:d.notiz,status:'bestätigt',kmRaus:null,kmRein:null,rechnung:null,color:null,vehicleId:d.vehicleId||'v1'};
@@ -1762,7 +1764,7 @@ class Component extends DCLogic {
   loadAnfragen(){
     if(!this.pb||!this.state.loggedIn||!this.pb.authStore?.isValid)return;
     this.pb.collection('kw_booking_requests').getList(1,100,{sort:'-created'})
-      .then(res=>this.setState({anfragen:res.items||[]}))
+      .then(res=>{this.setState({anfragen:res.items||[]});this.syncCalendar();})
       .catch(()=>{});
   }
   approveAnfrage(id){
@@ -1789,7 +1791,10 @@ class Component extends DCLogic {
   }
   syncCalendar(){
     if(!this.pb||!this.state.loggedIn)return;
-    const ranges=this.state.bookings.filter(b=>b.status!=='storniert'&&b.status!=='abgeschlossen').map(b=>({from:b.von,to:b.bis}));
+    const ranges=[
+      ...this.state.bookings.filter(b=>b.status!=='storniert'&&b.status!=='abgeschlossen').map(b=>({from:b.von,to:b.bis,type:'booked'})),
+      ...this.state.anfragen.filter(a=>a.status==='pending').map(a=>({from:a.from_date,to:a.to_date,type:'requested'}))
+    ];
     this.pb.collection('kw_calendar').getList(1,1)
       .then(res=>{if(!this.pb)return;if(res.items.length>0)return this.pb.collection('kw_calendar').update(res.items[0].id,{data:ranges});return this.pb.collection('kw_calendar').create({data:ranges});})
       .catch(()=>{});

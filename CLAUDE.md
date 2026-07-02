@@ -29,6 +29,22 @@
 - Logo (`uploads/logo-weiss-transparent-1000.gif`) wird automatisch deployed → landet in `/pb_public/uploads/`
 - **SSH-Key einrichten:** `setup-ssh-key.ps1` einmalig ausführen → kein Passwort mehr bei deploy.bat
 - `support.js` Pfad: `/support.js` (absolut) — nicht `./support.js` (führt zu falschem Pfad bei index.html)
+- **Zwei Deploy-Varianten:**
+  - `deploy.bat` — normaler Deploy (HTML-Änderungen), KEIN Container-Restart
+  - `deploy-hooks.bat` — Deploy MIT Hook-Update + Container-Neustart (`deploy.ps1 -Hooks`). Nur nötig wenn `pb_hooks/kw_anfragen.pb.js` geändert wurde
+
+### Kalender-Sync & Doppelanfragen (Stand 02.07.2026) — GELÖST
+- **kw_calendar Format:** `[{from, to, type:'booked'|'requested'}]` — booked = Buchungen, requested = pending Anfragen
+- **Serverseitiger Hook LÄUFT JETZT** (`kw_anfragen.pb.js`): spiegelt pending-Anfragen sofort nach kw_calendar, unabhängig von der Admin-App. Login-Lücke geschlossen.
+- **Client-Pfad zusätzlich aktiv:** `loadAnfragen()` → `syncCalendar()` (booked + requested), bei Login + alle 2 Min
+- **buchung.html:** liest kw_calendar (`sort=-updated`), zeigt `angefragt` orange, Auswahl blockiert; Datumsfelder ROT bei Konflikt; Submit blockiert bei Überlappung; Doppel-Submit-Guard; Reload nach Submit
+- Alter kw_calendar-Eintrag ohne `type` → als `booked` behandelt (`r.type||'booked'`)
+
+### ⚠️ ZWEI ENTSCHEIDENDE HOOK-FALLSTRICKE (waren die Ursache)
+1. **Hooks-Pfad:** PocketBase läuft mit `hooksDir=pb_hooks` (RELATIV → CWD-relativ = `/pb/pb_hooks`, NICHT `/pb_data/pb_hooks`!). Es gibt drei Kandidaten: `/pb_hooks`, `/pb/pb_hooks`, `/pb_data/pb_hooks`. `deploy.ps1` kopiert jetzt in ALLE DREI. Aktiv ist `/pb/pb_hooks`.
+2. **Isolierter Scope:** PocketBase-Hook-Callbacks können KEINE top-level Funktionen/Variablen aufrufen → `ReferenceError: xxx is not defined`. Alle Logik MUSS inline im Callback stehen, nur globale `$app.*` / `new Record()` sind verfügbar. Die Kalender-Rebuild-Logik ist daher inline in beide Hooks dupliziert.
+- **PocketBase Version:** v0.39.5 → `$app.save(record)`, `$app.findAllRecords()`, `$app.findRecordsByFilter()`, `$app.findCollectionByNameOrId()`, `new Record(coll)` sind korrekt
+- **Diagnose-Trick wenn Hook-Logs unsichtbar:** `console.log`/`$app.logger()` erscheinen NICHT in Admin-Logs oder docker logs. Stattdessen Diagnose in E-Mail-Betreff schreiben (Mail-Kanal funktioniert zuverlässig)
 
 ### Konfliktcheck (Doppelbuchungen)
 - `submitBooking` (manuelle Buchung): prüft gegen bestehende Buchungen mit `parseD()` (nicht String-Vergleich!)
