@@ -1,6 +1,6 @@
 # Kühlwagen-Verwaltungssystem — Projektnotizen
 
-## Deployment-Status (Stand 01.07.2026)
+## Deployment-Status (Stand 26.07.2026)
 
 ### App-URLs
 - **Startseite:** https://kw.hofreither.at/start.html
@@ -95,20 +95,6 @@ git push origin main
 git checkout dev
 ```
 
-### Offener Commit (noch ausstehend)
-Alle heutigen Änderungen ins Git:
-```powershell
-cd "$env:USERPROFILE\Downloads\kuehlwagen"
-git checkout dev
-git add .
-git commit -m "Tagessatz 0 fix, logout fix, km entfernt, Buchungsbestätigung Mail, Startseite, alle Bugfixes, pbRecordId race condition fix"
-git push origin dev
-git checkout main
-git merge dev --no-edit
-git push origin main
-git checkout dev
-```
-
 ### ✅ Erledigte Aufgaben
 1. **index.html** — FERTIG (https://kw.hofreither.at/index.html)
 2. **buchung.html** — FERTIG (https://kw.hofreither.at/buchung.html)
@@ -121,11 +107,45 @@ git checkout dev
 9. **Reset-Button** — in Stammdaten, löscht alle Daten + PocketBase
 10. **Git-Workflow** — GitHub Repo, dev/prod Branches, deploy.ps1
 11. **pbRecordId Race Condition** — BEHOBEN (sessionStorage Backup, 300ms Debounce, beforeunload)
+12. **Lokale PocketBase-Entwicklungsumgebung** — FERTIG (siehe Abschnitt unten)
 
 ### Offene Aufgaben
 1. **Root-Redirect** / → /start.html — Traefik-Middleware nötig, vorerst als Lesezeichen belassen
-2. **Lokale PocketBase** einrichten (pocketbase.exe + PB_URL umschaltbar)
-3. **Setup-Guide** für Git/Deploy erstellen
+2. **Setup-Guide** für Git/Deploy erstellen
+
+## Lokale Entwicklungsumgebung
+
+Läuft komplett unabhängig vom Produktivserver, im Projektordner (`pocketbase.exe`, `pb_data/`, `pb_public/` sind gitignored).
+
+### Start
+```powershell
+./pocketbase.exe serve --http=127.0.0.1:8090
+```
+Kein Autostart eingerichtet — muss nach jedem Neustart manuell gestartet werden.
+
+### URLs (lokal)
+- Startseite: http://127.0.0.1:8090/start.html
+- Verwaltung: http://127.0.0.1:8090/index.html
+- Buchungsseite: http://127.0.0.1:8090/buchung.html
+- PocketBase Admin: http://127.0.0.1:8090/_/
+
+Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (kein `PB_URL`-Umschalter nötig) — Voraussetzung ist, dass sie aus dem `pb_public`-Ordner desselben PocketBase-Servers ausgeliefert wird.
+
+### Zugangsdaten (nur lokal!)
+- Superuser `andreas@hofreither.at` — gleiches Passwort wie Prod
+- Normale User (Login in der App): `andreas@hofreither.at`, `ulrike.gruber@valentinum.at`, `christa.pitschmann@valentinum.at` — alle mit Passwort `lokal1234`
+
+### Bekannte Einschränkungen
+- **SMTP nicht konfiguriert** — E-Mail-Hooks (`pb_hooks/kw_anfragen.pb.js`) laufen zwar, aber es wird lokal keine echte Mail verschickt. Für Tests müsste in der lokalen PB-Admin-UI ein SMTP-Server (z.B. Mailtrap) hinterlegt werden.
+- `pb_public/` wird nicht neu befüllt, wenn sich die Standalone-HTMLs ändern — nach Änderungen manuell neu kopieren:
+  ```powershell
+  cp "Kühlwagen-Verwaltung-standalone.html" pb_public/index.html
+  cp "Buchungsanfrage-standalone.html" pb_public/buchung.html
+  cp "Startseite-standalone.html" pb_public/start.html
+  ```
+
+### Schema-Migrationen
+`pb_migrations/` ist **versioniert** (im Gegensatz zu `pb_data/`) und enthält die automatisch generierten Migrationen für `kw_state`, `kw_calendar`, `kw_booking_requests`. Bei neuen Collections/Feldern legt PocketBase automatisch neue Dateien dort an — die sollten mitcommittet werden, damit das Schema reproduzierbar bleibt.
 
 ### Projektdateien
 - `Kühlwagen-Verwaltung.dc.html` — Hauptapp (Design Component)
@@ -135,17 +155,10 @@ git checkout dev
 - `Startseite.dc.html` — Einstiegsseite mit 2 Buttons
 - `Startseite-standalone.html` — Self-contained (→ start.html)
 - `pb_hooks/kw_anfragen.pb.js` — E-Mail-Hooks für PocketBase
+- `pb_migrations/` — Schema-Migrationen (versioniert, siehe „Lokale Entwicklungsumgebung")
 - `deploy.ps1` — Deploy-Script (SCP + Container-Copy)
 - `commit-and-deploy.ps1` — Git-Commit + Deploy kombiniert
 - `Deployment-Anleitung.html` — Vollständige Anleitung
-
-### Geplant
-- Git-Workflow einrichten (GitHub, dev/prod Branches) ✅
-- Lokale PocketBase Entwicklungsumgebung (localhost:8090)
-  - pocketbase.exe in kuehlwagen-Ordner legen
-  - PB_URL in App umschaltbar machen (localhost:8090 vs kw.hofreither.at)
-- Deploy-Script ✅
-- Setup-Guide dafür erstellen lassen
 
 ### Bekannte technische Fallstricke (für zukünftige Entwicklung)
 - `this.pb` nach Logout NICHT auf `null` setzen — nur `authStore.clear()` — sonst schlägt das nächste Login fehl
