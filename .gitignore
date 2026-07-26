@@ -2,3 +2,8 @@
 Buchungsanfrage-standalone.html
 Kühlwagen-Verwaltung-standalone.html
 .thumbnail
+
+# PocketBase (lokal)
+pocketbase.exe
+pb_data/
+pb_public/
