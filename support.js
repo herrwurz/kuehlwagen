@@ -866,6 +866,10 @@
       __setLogicState(update, cb) {
         const prev = this.logic.state;
         const patch = typeof update === "function" ? update(prev) : update;
+        if (!this.__hasPendingPrev) {
+          this.__prevLogicState = prev;
+          this.__hasPendingPrev = true;
+        }
         this.logic.state = { ...prev, ...patch };
         this.setState((s) => ({ __v: s.__v + 1 }), cb);
       }
@@ -909,9 +913,11 @@
           }
         } else {
           try {
-            this.logic.componentDidUpdate(prevProps);
+            this.logic.componentDidUpdate(prevProps, this.__prevLogicState || this.logic.state);
           } catch (e) {
             console.error(e);
+          } finally {
+            this.__hasPendingPrev = false;
           }
         }
       }
