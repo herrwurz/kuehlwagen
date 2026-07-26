@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #e7ebf0; }
+  doc-page:not(:defined) { visibility: hidden; }
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page size="a4" margin="14mm">
+
+  <div slot="header" style="display:flex;align-items:center;justify-content:space-between;padding:0 0 8px 0;border-bottom:1px solid #e6eaef;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:26px;height:26px;border-radius:7px;background:#142029;display:flex;align-items:center;justify-content:center;color:#3b82d6;font-size:15px">❄</div>
+      <span style="font-size:12px;font-weight:700;color:#142029;letter-spacing:-.2px">Kühlwagen-Verwaltung</span>
+    </div>
+    <span style="font-size:10.5px;color:#8a96a3;font-weight:500">Feature-Roadmap · Stand 07.07.2026</span>
+  </div>
+
+  <div slot="footer" style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid #e6eaef;font-family:'DM Mono',monospace;font-size:9.5px;color:#9aa6b2">
+    <span>Kühlwagen-Verleih St. Valentin</span>
+    <span>Interne Planung — kein Umsetzungs-Commitment</span>
+  </div>
+
+  <!-- TITLE -->
+  <div style="font-family:'Hanken Grotesk',sans-serif;color:#1b2733">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:#3b82d6;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Produkt-Roadmap</div>
+    <h1 style="font-size:30px;font-weight:800;letter-spacing:-.6px;margin:0 0 10px 0;line-height:1.1">Erweiterungen &amp; Ausbaustufen</h1>
+    <p style="font-size:13px;line-height:1.6;color:#5a6675;margin:0;max-width:560px">Kandidaten für den Weiterausbau der Verwaltungs-App — gruppiert nach Ausbaustufen. Reihenfolge ist ein Vorschlag nach Nutzen und Aufwand, kein fixer Plan. Die Test-Phase der Mitarbeiterinnen wird die Liste ergänzen und die Prioritäten schärfen.</p>
+  </div>
+
+  <!-- LEGEND -->
+  <div style="display:flex;gap:22px;flex-wrap:wrap;margin:20px 0 4px 0;padding:13px 16px;background:#f6f8fb;border:1px solid #e6eaef;border-radius:11px;font-family:'Hanken Grotesk',sans-serif">
+    <div style="font-size:11px">
+      <span style="font-weight:700;color:#1b2733">Nutzen</span>
+      <span style="color:#8a96a3">&nbsp;wie stark hilft es im Alltag</span>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:#1d6e48;margin-top:3px">●●● hoch &nbsp; ●●○ mittel &nbsp; ●○○ gering</div>
+    </div>
+    <div style="font-size:11px">
+      <span style="font-weight:700;color:#1b2733">Aufwand</span>
+      <span style="color:#8a96a3">&nbsp;Umsetzung</span>
+      <div style="font-family:'DM Mono',monospace;font-size:12px;color:#c25450;margin-top:3px">●○○ klein &nbsp; ●●○ mittel &nbsp; ●●● groß</div>
+    </div>
+    <div style="font-size:11px">
+      <span style="font-weight:700;color:#1b2733">Status</span>
+      <span style="color:#8a96a3">&nbsp;wird im Test gepflegt</span>
+      <div style="font-size:11px;margin-top:3px;display:flex;gap:5px">
+        <span style="background:#eef2f7;color:#5a6675;padding:1px 8px;border-radius:20px;font-weight:600">Vorschlag</span>
+        <span style="background:#fff2e2;color:#a5641a;padding:1px 8px;border-radius:20px;font-weight:600">geplant</span>
+        <span style="background:#e6f4ec;color:#1d6e48;padding:1px 8px;border-radius:20px;font-weight:600">in Umsetzung</span>
+        <span style="background:#1d6e48;color:#fff;padding:1px 8px;border-radius:20px;font-weight:600">umgesetzt</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div style="display:flex;align-items:center;gap:12px;margin:26px 0 14px 0;font-family:'Hanken Grotesk',sans-serif">
+    <div style="width:30px;height:30px;border-radius:9px;background:#3b82d6;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0">1</div>
+    <div>
+      <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">Quick Wins — kleiner Aufwand, sofort spürbar</div>
+      <div style="font-size:11.5px;color:#8a96a3">Direkt aufsetzbar auf bestehende Buchungen, Rechnungen &amp; Mails</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e6eaef;border-radius:12px;overflow:hidden;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;padding:9px 16px;background:#f6f8fb;border-bottom:1px solid #e6eaef;font-size:10px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px">
+      <span>Funktion</span><span style="text-align:center">Nutzen</span><span style="text-align:center">Aufwand</span><span style="text-align:center">Status</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Automatische Erinnerungs-Mails</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">„Abholung morgen", „Rückgabe heute", „Kaution zurücküberwiesen"</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●●</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●○○</div>
+      <div style="text-align:center"><span style="background:#1d6e48;color:#fff;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Umgesetzt</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">SEPA-QR-Code auf der Rechnung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Kunde scannt &amp; zahlt per Banking-App — weniger Zahlendreher</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●●</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●○○</div>
+      <div style="text-align:center"><span style="background:#1d6e48;color:#fff;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Umgesetzt</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Kautions-Status je Buchung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">offen / hinterlegt / zurückgezahlt, Teil-Einbehalt bei Schaden</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●○○</div>
+      <div style="text-align:center"><span style="background:#1d6e48;color:#fff;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Umgesetzt</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Mahnstufen (1. / 2. Mahnung)</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Eskalierende Texte statt einer pauschalen „überfällig"-Markierung</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#1d6e48;color:#fff;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Umgesetzt</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">AGB-/Mietvertrag-Zustimmung online</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Pflicht-Häkchen im Buchungsformular, Text als PDF hinterlegt</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●○○</div>
+      <div style="text-align:center"><span style="background:#1d6e48;color:#fff;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Umgesetzt</span></div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div style="display:flex;align-items:center;gap:12px;margin:28px 0 14px 0;font-family:'Hanken Grotesk',sans-serif">
+    <div style="width:30px;height:30px;border-radius:9px;background:#142029;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0">2</div>
+    <div>
+      <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">Kern-Ausbau — Betrieb &amp; Rechtssicherheit</div>
+      <div style="font-size:11.5px;color:#8a96a3">Neue Bausteine rund um Übergabe, Hygiene und Wartung</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e6eaef;border-radius:12px;overflow:hidden;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;padding:9px 16px;background:#f6f8fb;border-bottom:1px solid #e6eaef;font-size:10px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px">
+      <span>Funktion</span><span style="text-align:center">Nutzen</span><span style="text-align:center">Aufwand</span><span style="text-align:center">Status</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Digitales Übergabe-Protokoll</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Fotos Zustand vor/nach, Checkliste, Unterschrift auf Tablet/Handy</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●●</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●●</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">HACCP-Temperaturprotokoll</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Kühltemperatur dokumentieren — bei Lebensmittelkühlung ggf. Pflicht</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●●</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">iCal-Abo der Belegung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Belegung als Kalender-Abo in Outlook / Google / Handy einbinden</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Service-Intervalle &amp; Wartungserinnerung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">§57a-Pickerl, Wartung — automatische Fälligkeits-Erinnerung</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Reinigungsnachweis nach Vermietung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Kurzer Nachweis je Rückgabe, an Buchung gehängt</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●○○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div style="display:flex;align-items:center;gap:12px;margin:28px 0 14px 0;font-family:'Hanken Grotesk',sans-serif">
+    <div style="width:30px;height:30px;border-radius:9px;background:#7d8a97;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0">3</div>
+    <div>
+      <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">Komfort &amp; Skalierung — später</div>
+      <div style="font-size:11.5px;color:#8a96a3">Sinnvoll, wenn Betrieb &amp; Auslastung wachsen</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e6eaef;border-radius:12px;overflow:hidden;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;padding:9px 16px;background:#f6f8fb;border-bottom:1px solid #e6eaef;font-size:10px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px">
+      <span>Funktion</span><span style="text-align:center">Nutzen</span><span style="text-align:center">Aufwand</span><span style="text-align:center">Status</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">SMS-Benachrichtigung</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Zusätzlich zur Mail — Erinnerung, Bestätigung</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Online-Zahlung (EPS / Kreditkarte)</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Kaution oder Gebühr direkt bei der Buchung zahlen</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●●○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●●</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px;border-bottom:1px solid #eef1f5">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Warteliste für belegte Zeiträume</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Bei Absage automatisch nächsten Interessenten benachrichtigen</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●○○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●○</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 74px 74px 96px;align-items:center;padding:12px 16px">
+      <div><div style="font-size:13px;font-weight:700;color:#1b2733">Mehrere Fahrzeuge / Einheiten</div><div style="font-size:11.5px;color:#7d8a97;margin-top:2px">Belegung pro Einheit, falls ein zweiter Wagen dazukommt</div></div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1d6e48;text-align:center">●○○</div>
+      <div style="font-family:'DM Mono',monospace;font-size:13px;color:#c25450;text-align:center">●●●</div>
+      <div style="text-align:center"><span style="background:#eef2f7;color:#5a6675;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:600">Vorschlag</span></div>
+    </div>
+  </div>
+
+  <!-- QUERSCHNITT -->
+  <div style="display:flex;align-items:center;gap:12px;margin:28px 0 14px 0;font-family:'Hanken Grotesk',sans-serif">
+    <div style="width:30px;height:30px;border-radius:9px;background:#f0f5fc;color:#1b5fb8;border:1px solid #c8d9f0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">✦</div>
+    <div>
+      <div style="font-size:16px;font-weight:800;color:#142029;letter-spacing:-.3px">Querschnitt — jederzeit sinnvoll</div>
+      <div style="font-size:11.5px;color:#8a96a3">Verwaltung, Berichte, Nachvollziehbarkeit</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-family:'Hanken Grotesk',sans-serif">
+    <div style="border:1px solid #e6eaef;border-radius:11px;padding:13px 15px"><div style="font-size:12.5px;font-weight:700;color:#1b2733">Rollen &amp; Rechte</div><div style="font-size:11px;color:#7d8a97;margin-top:2px">„nur ansehen" vs. „genehmigen &amp; abrechnen"</div></div>
+    <div style="border:1px solid #e6eaef;border-radius:11px;padding:13px 15px"><div style="font-size:12.5px;font-weight:700;color:#1b2733">Änderungs-Protokoll (Audit-Log)</div><div style="font-size:11px;color:#7d8a97;margin-top:2px">Wer hat wann was geändert</div></div>
+    <div style="border:1px solid #e6eaef;border-radius:11px;padding:13px 15px"><div style="font-size:12.5px;font-weight:700;color:#1b2733">Buchhaltungs-Export</div><div style="font-size:11px;color:#7d8a97;margin-top:2px">CSV / BMD für die Gemeindebuchhaltung</div></div>
+    <div style="border:1px solid #e6eaef;border-radius:11px;padding:13px 15px"><div style="font-size:12.5px;font-weight:700;color:#1b2733">Jahresbericht-Export</div><div style="font-size:11px;color:#7d8a97;margin-top:2px">Auslastung &amp; Einnahmen für den Gemeinderat</div></div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div style="margin-top:28px;border:1px dashed #c8d3de;border-radius:12px;padding:18px 20px;background:#fbfcfe;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:15px">📝</span>
+      <div style="font-size:14px;font-weight:800;color:#142029">Rückmeldungen aus dem Mitarbeiter-Test</div>
+    </div>
+    <div style="font-size:11.5px;color:#7d8a97;margin-bottom:14px">Neue Wünsche &amp; Beobachtungen aus der Testphase hier ergänzen — sie fließen in die Priorisierung ein.</div>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0b8c4">01</span><div style="border-bottom:1px solid #dce3ea;height:20px"></div><div style="border-bottom:1px solid #dce3ea;height:20px"></div></div>
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0b8c4">02</span><div style="border-bottom:1px solid #dce3ea;height:20px"></div><div style="border-bottom:1px solid #dce3ea;height:20px"></div></div>
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0b8c4">03</span><div style="border-bottom:1px solid #dce3ea;height:20px"></div><div style="border-bottom:1px solid #dce3ea;height:20px"></div></div>
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0b8c4">04</span><div style="border-bottom:1px solid #dce3ea;height:20px"></div><div style="border-bottom:1px solid #dce3ea;height:20px"></div></div>
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center"><span style="font-family:'DM Mono',monospace;font-size:11px;color:#b0b8c4">05</span><div style="border-bottom:1px solid #dce3ea;height:20px"></div><div style="border-bottom:1px solid #dce3ea;height:20px"></div></div>
+      <div style="display:grid;grid-template-columns:20px 1fr 120px;gap:10px;align-items:center;font-size:9.5px;color:#b0b8c4;font-weight:600;text-transform:uppercase;letter-spacing:.4px"><span></span><span>Wunsch / Beobachtung</span><span>Wer / Datum</span></div>
+    </div>
+  </div>
+
+</doc-page>
+</x-dc>
+</body>
+</html>

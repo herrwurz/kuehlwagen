@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #e7ebf0; }
+  doc-page:not(:defined) { visibility: hidden; }
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page size="a4" margin="14mm">
+
+  <div slot="header" style="display:flex;align-items:center;justify-content:space-between;padding:0 0 8px 0;border-bottom:1px solid #e6eaef;font-family:'Hanken Grotesk',sans-serif">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div style="width:26px;height:26px;border-radius:7px;background:#142029;display:flex;align-items:center;justify-content:center;color:#3b82d6;font-size:15px">❄</div>
+      <span style="font-size:12px;font-weight:700;color:#142029;letter-spacing:-.2px">Kühlwagen-Verwaltung</span>
+    </div>
+    <span style="font-size:10.5px;color:#8a96a3;font-weight:500">Kalender-Sync · Konzept · 07.07.2026</span>
+  </div>
+
+  <div slot="footer" style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid #e6eaef;font-family:'DM Mono',monospace;font-size:9.5px;color:#9aa6b2">
+    <span>Kühlwagen-Verleih St. Valentin</span>
+    <span>Konzept — noch nicht umgesetzt</span>
+  </div>
+
+  <div style="font-family:'Hanken Grotesk',sans-serif;color:#1b2733">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:#3b82d6;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Konzept</div>
+    <h1 style="font-size:28px;font-weight:800;letter-spacing:-.6px;margin:0 0 10px 0;line-height:1.1">Belegung im Gemeinde-Kalender (Nextcloud)</h1>
+    <p style="font-size:13px;line-height:1.6;color:#5a6675;margin:0;max-width:560px">Ziel: Kühlwagen-Buchungen erscheinen automatisch im allgemeinen Gemeinde-Kalender unter <span style="font-family:'DM Mono',monospace;font-size:12px">st-valentin.nc-001.cloud.itandtel.at</span> (Nextcloud) — einseitig, nur Anzeige, Aktualisierung alle paar Minuten bis stündlich reicht.</p>
+  </div>
+
+  <!-- OPTION A -->
+  <div style="margin-top:26px;border:1px solid #c8d9f0;border-radius:14px;overflow:hidden">
+    <div style="background:#f0f5fc;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:800;color:#142029">Option A — ICS-Abo-Feed <span style="font-weight:600;color:#1b5fb8">(empfohlen)</span></div>
+      <span style="background:#1d6e48;color:#fff;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:'Hanken Grotesk',sans-serif">Geringer Aufwand</span>
+    </div>
+    <div style="padding:18px 20px;font-family:'Hanken Grotesk',sans-serif">
+      <p style="font-size:13px;line-height:1.7;color:#3a4854;margin:0 0 12px 0">PocketBase liefert die Belegung als öffentliche <span style="font-family:'DM Mono',monospace;font-size:12px;background:#f6f8fb;padding:1px 5px;border-radius:4px">.ics</span>-Datei aus (analog zu den bestehenden <span style="font-family:'DM Mono',monospace;font-size:12px">kw_calendar</span>-Daten). In Nextcloud trägt man diese URL einmalig als <em>„Von URL abonnieren"</em> ein — Nextcloud holt sich die Datei danach selbst in regelmäßigen Abständen.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Voraussetzungen</div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#3a4854;line-height:1.8">
+            <li>Neuer öffentlicher PocketBase-Hook, der ICS generiert</li>
+            <li>Keine Nextcloud-Zugangsdaten nötig</li>
+            <li>Einmaliges Eintragen der Feed-URL in Nextcloud</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Einschränkungen</div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#3a4854;line-height:1.8">
+            <li>Erscheint als eigene Kalenderebene, nicht als Eintrag <em>im</em> bestehenden Kalender</li>
+            <li>Nextcloud bestimmt das Abruf-Intervall (meist 1×/Stunde, nicht exakt steuerbar)</li>
+            <li>Read-only — Änderungen in Nextcloud fließen nicht zurück (hier nicht nötig)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION B -->
+  <div style="margin-top:16px;border:1px solid #e6eaef;border-radius:14px;overflow:hidden">
+    <div style="background:#f6f8fb;padding:14px 20px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-family:'Hanken Grotesk',sans-serif;font-size:15px;font-weight:800;color:#142029">Option B — CalDAV-Push in den bestehenden Kalender</div>
+      <span style="background:#fff2e2;color:#a5641a;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px;font-family:'Hanken Grotesk',sans-serif">Höherer Aufwand</span>
+    </div>
+    <div style="padding:18px 20px;font-family:'Hanken Grotesk',sans-serif">
+      <p style="font-size:13px;line-height:1.7;color:#3a4854;margin:0 0 12px 0">Der PocketBase-Hook schreibt Buchungen aktiv per CalDAV (<span style="font-family:'DM Mono',monospace;font-size:12px">PUT</span>/<span style="font-family:'DM Mono',monospace;font-size:12px">DELETE</span>) direkt als echte Termine <em>in</em> den vorhandenen allgemeinen Kalender — dort, wo auch die anderen Gemeinde-Termine liegen. Läuft als Cron alle paar Minuten, vergleicht Buchungsstand und synchronisiert Neu-/Änderungen/Stornos über eine eindeutige Termin-ID je Buchung.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Voraussetzungen</div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#3a4854;line-height:1.8">
+            <li>Nextcloud-Benutzer + App-Passwort (nicht das Login-Passwort) mit Schreibrecht auf den Kalender</li>
+            <li>Genauer Kalendername/-pfad (z.B. <span style="font-family:'DM Mono',monospace">/remote.php/dav/calendars/USER/KALENDER/</span>)</li>
+            <li>Zusätzliche Sync-Logik im Hook (Abgleich, Konfliktbehandlung)</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#8a96a3;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Einschränkungen</div>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;color:#3a4854;line-height:1.8">
+            <li>App-Passwort muss sicher hinterlegt werden (Secret im Hook)</li>
+            <li>Mischt sich mit anderen Terminen — versehentliches Löschen fremder Termine muss ausgeschlossen sein</li>
+            <li>Mehr Fehlerquellen, mehr Testaufwand</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMPFEHLUNG -->
+  <div style="margin-top:22px;background:#f0f5fc;border:1px solid #c8d9f0;border-radius:12px;padding:16px 20px;font-family:'Hanken Grotesk',sans-serif">
+    <div style="font-size:13px;font-weight:800;color:#142029;margin-bottom:5px">Empfehlung</div>
+    <p style="font-size:12.5px;line-height:1.7;color:#3a4854;margin:0">Mit <strong>Option A</strong> starten: kein Zugangsdaten-Risiko, schnell umsetzbar, für „nur Anzeige" völlig ausreichend. Falls die getrennte Kalenderebene stört, später auf Option B upgraden — die Buchungsdaten (kw_calendar) sind für beide Wege identisch, nur die Zustellung ändert sich.</p>
+  </div>
+
+  <!-- CHECKLISTE -->
+  <div style="margin-top:22px;border:1px dashed #c8d3de;border-radius:12px;padding:18px 20px;background:#fbfcfe;font-family:'Hanken Grotesk',sans-serif">
+    <div style="font-size:14px;font-weight:800;color:#142029;margin-bottom:4px">Für die Umsetzung noch nötig</div>
+    <div style="font-size:11.5px;color:#7d8a97;margin-bottom:12px">Vor dem Start bitte besorgen/klären:</div>
+    <div style="display:flex;flex-direction:column;gap:9px;font-size:12.5px;color:#3a4854">
+      <div style="display:flex;gap:9px;align-items:flex-start"><span style="width:16px;height:16px;border:1.5px solid #c8d3de;border-radius:4px;flex-shrink:0;margin-top:1px"></span><span>Bei Option A: nichts weiter — nur die Nextcloud-URL zum Eintragen des Abos</span></div>
+      <div style="display:flex;gap:9px;align-items:flex-start"><span style="width:16px;height:16px;border:1.5px solid #c8d3de;border-radius:4px;flex-shrink:0;margin-top:1px"></span><span>Bei Option B: Nextcloud-Benutzername + App-Passwort (Einstellungen → Sicherheit → Geräte &amp; Sessions → „App-Passwort erzeugen")</span></div>
+      <div style="display:flex;gap:9px;align-items:flex-start"><span style="width:16px;height:16px;border:1.5px solid #c8d3de;border-radius:4px;flex-shrink:0;margin-top:1px"></span><span>Bei Option B: Name/Pfad des Ziel-Kalenders in Nextcloud</span></div>
+      <div style="display:flex;gap:9px;align-items:flex-start"><span style="width:16px;height:16px;border:1.5px solid #c8d3de;border-radius:4px;flex-shrink:0;margin-top:1px"></span><span>Entscheidung: Option A oder B</span></div>
+    </div>
+  </div>
+
+</doc-page>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail" data-bg-color="#3b82d6">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect x="360" y="180" width="480" height="440" rx="24" fill="#ffffff"/>
+    <rect x="410" y="250" width="300" height="26" rx="8" fill="#3b82d6"/>
+    <rect x="410" y="320" width="380" height="14" rx="7" fill="#c7d6ea"/>
+    <rect x="410" y="356" width="380" height="14" rx="7" fill="#c7d6ea"/>
+    <rect x="410" y="392" width="280" height="14" rx="7" fill="#c7d6ea"/>
+    <rect x="410" y="460" width="18" height="18" rx="4" fill="#3b82d6"/>
+    <rect x="446" y="462" width="344" height="14" rx="7" fill="#c7d6ea"/>
+    <rect x="410" y="500" width="18" height="18" rx="4" fill="#3b82d6"/>
+    <rect x="446" y="502" width="344" height="14" rx="7" fill="#c7d6ea"/>
+    <rect x="410" y="540" width="18" height="18" rx="4" fill="#3b82d6"/>
+    <rect x="446" y="542" width="220" height="14" rx="7" fill="#c7d6ea"/>
+  </svg>
+</template>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  doc-page:not(:defined){ visibility:hidden; }
+  body{ margin:0; font-family:'Source Sans 3', system-ui, sans-serif; color:#1f2937; }
+</style>
+</helmet>
+<x-import component-from-global-scope="doc-page" from="./doc-page.js" size="a4" margin="0.85in" hint-size="100%,100%">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:18px; border-bottom:3px solid #3b82d6; margin-bottom:26px;">
+    <div>
+      <div style="font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#3b82d6; font-weight:700;">Kühlwagen-Verleih · Stadtgemeinde St. Valentin</div>
+      <h1 style="font-size:27px; font-weight:700; margin:6px 0 0; letter-spacing:-0.3px;">Testanleitung für Mitarbeiterinnen</h1>
+    </div>
+    <div style="text-align:right; font-size:11px; color:#6b7280; line-height:1.5; flex-shrink:0;">
+      Testphase<br>Stand: Juli 2026
+    </div>
+  </div>
+
+  <p style="font-size:15px; line-height:1.6; margin:0 0 22px;">Vielen Dank fürs Mithelfen beim Testen! Auf diesen Seiten prüfen wir gemeinsam, ob das neue Verwaltungsprogramm im Alltag gut funktioniert, <strong>bevor</strong> es echt eingesetzt wird. Bitte einfach ausprobieren — kaputt machen könnt ihr nichts.</p>
+
+  <div style="background:#eff5fd; border:1px solid #cfe0f8; border-radius:12px; padding:18px 22px; margin-bottom:26px;">
+    <div style="font-size:13px; font-weight:700; color:#2563c4; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Wichtig vorab</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px 28px; font-size:14px; line-height:1.55;">
+      <div><strong>Es ist ein Testsystem.</strong> Alle Eingaben sind Übungsdaten — bitte <u>keine</u> echten Kundenbuchungen eintragen.</div>
+      <div><strong>Daten können zurückgesetzt werden.</strong> Von Zeit zu Zeit wird alles geleert. Eure Test-Buchungen sind dann weg — das ist normal.</div>
+      <div><strong>Erfundene Namen verwenden.</strong> Zum Testen z. B. „Max Mustermann", „Verein Test" o. ä. nehmen, keine echten Personendaten.</div>
+      <div><strong>Fragen? Einfach melden.</strong> Kontakt steht unten auf der letzten Seite.</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:18px; font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:#3b82d6; color:#fff; border-radius:7px; font-size:14px;">1</span>Zugang</h2>
+
+  <table style="width:100%; border-collapse:collapse; font-size:14px; margin-bottom:12px;">
+    <tr style="border-bottom:1px solid #e5e7eb;">
+      <td style="padding:10px 0; width:42%; color:#6b7280;">Verwaltung (für euch)</td>
+      <td style="padding:10px 0; font-weight:600;">kw.hofreither.at/index.html</td>
+    </tr>
+    <tr style="border-bottom:1px solid #e5e7eb;">
+      <td style="padding:10px 0; color:#6b7280;">Öffentliche Buchungsseite</td>
+      <td style="padding:10px 0; font-weight:600;">kw.hofreither.at/buchung.html</td>
+    </tr>
+    <tr style="border-bottom:1px solid #e5e7eb;">
+      <td style="padding:10px 0; color:#6b7280;">Login</td>
+      <td style="padding:10px 0; font-weight:600;">eure E-Mail-Adresse + zugesandtes Passwort</td>
+    </tr>
+  </table>
+  <p style="font-size:13px; color:#6b7280; margin:0 0 26px; line-height:1.5;">Am besten am PC im Browser (Chrome/Edge/Firefox) öffnen. Die Buchungsseite lässt sich auch am Handy testen.</p>
+
+  <h2 style="font-size:18px; font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:#3b82d6; color:#fff; border-radius:7px; font-size:14px;">2</span>Das bitte durchspielen</h2>
+
+  <div style="display:flex; flex-direction:column; gap:11px; margin-bottom:8px;">
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Buchung anlegen</strong> — eine neue Buchung mit Übungsdaten erfassen (Zeitraum, Kunde, Tagessatz). Stimmen die berechneten Kosten?</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Belegung ansehen</strong> — im Kalender zwischen Tag / Woche / Monat / Jahr wechseln. Wird eure Buchung überall richtig angezeigt?</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Doppelbuchung testen</strong> — versucht bewusst, denselben Zeitraum zweimal zu buchen. Das System sollte warnen bzw. blockieren.</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Online-Anfrage stellen</strong> — auf der Buchungsseite (buchung.html) eine Anfrage abschicken, als wärt ihr ein Kunde.</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Anfrage bearbeiten</strong> — die Anfrage in der Verwaltung im Reiter „Anfragen" <em>genehmigen</em> oder <em>ablehnen</em>. Kommt die passende E-Mail an?</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Rechnung ansehen</strong> — zu einer Buchung die Rechnung/Bestätigung öffnen. Sind Logo, Beträge und Adresse korrekt?</div></div>
+    <div style="display:flex; align-items:flex-start; gap:12px; font-size:14px; line-height:1.5;"><span style="flex-shrink:0; width:17px; height:17px; border:2px solid #3b82d6; border-radius:4px; margin-top:2px;"></span><div><strong>Ab- und wieder anmelden</strong> — funktioniert der Logout, und der erneute Login sauber?</div></div>
+  </div>
+
+  <div style="page-break-before:always;"></div>
+
+  <h2 style="font-size:18px; font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:#3b82d6; color:#fff; border-radius:7px; font-size:14px;">3</span>Fehler oder Wünsche melden</h2>
+
+  <p style="font-size:14px; line-height:1.6; margin:0 0 14px;">Wenn etwas nicht klappt, komisch aussieht oder umständlich ist: bitte notieren. Am hilfreichsten ist eine kurze Beschreibung nach diesem Muster:</p>
+
+  <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px 22px; margin-bottom:22px; font-size:14px; line-height:1.7;">
+    <div><strong style="color:#3b82d6;">Wo?</strong> &nbsp;z. B. „Verwaltung → Belegung, Monatsansicht"</div>
+    <div><strong style="color:#3b82d6;">Was gemacht?</strong> &nbsp;z. B. „Buchung vom 5.–8. August angelegt"</div>
+    <div><strong style="color:#3b82d6;">Was erwartet?</strong> &nbsp;z. B. „Buchung sollte im Kalender erscheinen"</div>
+    <div><strong style="color:#3b82d6;">Was passiert stattdessen?</strong> &nbsp;z. B. „Kalender bleibt leer"</div>
+  </div>
+
+  <p style="font-size:14px; line-height:1.6; margin:0 0 8px;">Ein <strong>Screenshot</strong> (Taste „Druck" / Snipping Tool) hilft zusätzlich enorm. Bitte sammeln und per E-Mail schicken — auch Kleinigkeiten und „das wäre schöner, wenn…"-Ideen sind willkommen.</p>
+
+  <div style="display:flex; flex-direction:column; gap:9px; margin:22px 0 30px;">
+    <div style="border-bottom:1px dashed #d1d5db; height:26px;"></div>
+    <div style="border-bottom:1px dashed #d1d5db; height:26px;"></div>
+    <div style="border-bottom:1px dashed #d1d5db; height:26px;"></div>
+    <div style="border-bottom:1px dashed #d1d5db; height:26px;"></div>
+    <div style="border-bottom:1px dashed #d1d5db; height:26px;"></div>
+  </div>
+
+  <div style="background:#1f2937; color:#fff; border-radius:12px; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px;">
+    <div>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:#93b8ef; font-weight:700; margin-bottom:5px;">Kontakt bei Fragen</div>
+      <div style="font-size:15px; line-height:1.5;">Andreas Hofreither<br><span style="color:#cbd5e1;">andreas@hofreither.at</span></div>
+    </div>
+    <div style="text-align:right; font-size:13px; color:#cbd5e1; line-height:1.5;">Danke für<br>eure Mithilfe!</div>
+  </div>
+
+</x-import>
+</x-dc>
+</body>
+</html>

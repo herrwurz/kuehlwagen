@@ -108,6 +108,17 @@
 - Es funktioniert aber gegen die normale `users`-Collection (`/api/collections/users/auth-with-password`) — für Lese-/Schreibzugriffe auf `kw_booking_requests`/`kw_calendar` reicht das (Rules verlangen nur `@request.auth.id != ""`, keine Superuser-Rolle)
 - Für echten Admin-UI-Zugriff (`/_/`) auf Produktion wird das tatsächliche, aktuelle Superuser-Passwort benötigt — ggf. per VNC Console neu setzen (siehe „PocketBase Superuser erstellen" unten)
 
+### Claude Design Editor Export reconciled (26.07.2026, später am Abend)
+Andreas hatte parallel zu dieser Session im Claude Design Editor weitergearbeitet und dort mehrere neue Features gebaut (siehe Erledigte Aufgaben 20-27), ohne dass dieses Repo davon wusste. Export als ZIP (`Kühlwagen-Verwaltungssystem.zip`) wurde hochgeladen und file-für-file gegen den Repo-Stand verglichen:
+- **`support.js`, `pb_hooks/kw_anfragen.pb.js`, `Buchungsanfrage.dc.html`:** enthielten die neuen Features, aber NICHT die Fixes 15/16/18 von heute (Byte-Array-Bug, PB_URL-Schema-Default, Autosave-Datenverlust) — alle drei Fixes wurden auf die neuen Dateiversionen erneut angewendet, bevor sie ins Repo kopiert wurden
+- **`deploy.ps1`:** hatte den CRLF-Fix (17) nicht, aber einen neuen Blau-Logo-Upload-Schritt — beides gemergt
+- **`Kühlwagen-Verwaltung.dc.html`, `Startseite.dc.html`:** keine bekannten Fixes betroffen, komplett aus dem Export übernommen
+- **Neue Dateien übernommen:** `Feature-Roadmap.dc.html`, `Kalender-Sync Konzept.dc.html`, `Testanleitung.dc.html`, `doc-page.js` (Dokuseiten), `start-local.bat`/`update-local.bat` (praktische Lokal-Start-Skripte)
+- **Nicht übernommen:** `rename-downloads.ps1` (alter Standalone-Workflow, obsolet), `CLAUDE.md`/`Deployment-Anleitung.html` aus dem Export (veralteter Stand, Repo-Version war aktueller), `*-standalone.html`
+- **`uploads/`-Ordner:** ist gitignored und existierte lokal gar nicht mehr — Logos (inkl. neuem `stvalentin-logo-blau.png` fürs SEPA-QR/Rechnung-Feature) aus dem Export wiederhergestellt
+- Nach dem Merge lokal erneut getestet (Login, Anfrage genehmigen, Persistenz in `kw_state`, neue Buchungsnummer `JAHR+NNNN`) — alles funktioniert
+- **Lehre:** Bei jedem künftigen Design-Editor-Export IMMER gegen den aktuellen Repo-Stand diffen, nie blind überschreiben — siehe Memory `workflow-only-claude-code` (wird laut Andreas aber nicht mehr vorkommen, da nur noch hier gearbeitet wird)
+
 ---
 
 ## Deployment-Status (Stand 26.07.2026)
@@ -241,9 +252,19 @@ git checkout dev
 16. **PB_URL-Fix Buchungsanfrage.dc.html** — BEHOBEN (zeigte fest auf Produktion, inkl. Schema-Default-Falle; lokal per Browsertest verifiziert)
 17. **deploy.ps1 CRLF-Bug** — BEHOBEN (Container-Copy schlug wegen Windows-Zeilenenden im SSH-Kommando fehl, dadurch fehlten `buchung.html`/`start.html` tageweise in Produktion — von `indexFallback` verschleiert)
 18. **KRITISCH: Genehmigte Anfragen nie gespeichert** — BEHOBEN (support.js-Framework-Bug verhinderte Autosave nach „Genehmigen + Buchung anlegen"; lokal verifiziert und nach Produktion deployt)
+19. **Claude Design Editor Stand reconciled** — Andreas hatte parallel im Design Editor weitergearbeitet (Export als ZIP); alle neuen Features wurden ins Repo gemergt, dabei die Fixes 15/16/17/18 erneut angewendet (siehe unten). Ab jetzt wird nur noch hier im Repo gearbeitet, kein Design Editor mehr (siehe Memory `workflow-only-claude-code`)
+20. **Erinnerungs-Mails** — täglicher Cron (`kwReminders`, 6:00 UTC) im PocketBase-Hook: „Abholung morgen" / „Rückgabe heute" an Kunden mit bestätigter Buchung
+21. **SEPA-QR auf Rechnung** — EPC-QR-Code (via `qrcode-generator` CDN-Lib) bei Zahlungsinformation, enthält IBAN/Betrag/Verwendungszweck; erscheint nur wenn IBAN+Betrag vorhanden
+22. **Kautions-Status** — Buchungs-Detail: Offen/Hinterlegt/Zurückgezahlt, wird in `kautionStatus` gespeichert
+23. **Mahnstufen** — 1./2. Mahnung mit eskalierender Mail-Vorlage (2. Mahnung: 7-Tage-Frist), Badge „2× gemahnt"
+24. **Mietbedingungen + Datenschutz Checkbox** — Pflichtfelder auf Buchungsseite; Mietbedingungen verlinkt auf `/uploads/mietbedingungen.pdf` ⚠️ **Datei fehlt noch — siehe Offene Aufgaben**
+25. **Honeypot-Spam-Schutz** — verstecktes Feld auf Buchungsseite, Bots die es ausfüllen werden stillschweigend verworfen
+26. **Responsive CSS + Umgebungs-Badge** — mobile Breakpoints (`kw-g1`/`bq-g1`/`kw-tbl`/`kw-tr`), „LOKAL"/„SERVER"-Badge unten rechts je nach Hostname
+27. **Buchungsnummern-Schema geändert** — von `B-XXXX` auf `JAHR+4-stellig` (z.B. `20260001`), konfigurierbare Start-Nummer in Stammdaten
 
 ### Offene Aufgaben
 1. **Setup-Guide** für Git/Deploy erstellen
+2. **`uploads/mietbedingungen.pdf` fehlt** — die neue Mietbedingungen-Checkbox verlinkt auf eine Datei, die es noch nicht gibt → 404 beim Klick. PDF erstellen/hochladen und in `uploads/` (lokal + Server) ablegen, dann mit deployen
 
 ## Lokale Entwicklungsumgebung
 
@@ -294,7 +315,11 @@ Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (k
 - `deploy-hooks.bat` — wie deploy.bat, zusätzlich Hook-Update + Container-Neustart
 - `setup-ssh-key.ps1` — einmalig ausführen, dann kein Passwort mehr bei deploy.bat nötig
 - `commit-and-deploy.ps1` — Git-Commit + Deploy kombiniert (referenziert alten Downloads-Pfad, ggf. veraltet)
+- `start-local.bat` — startet `pocketbase.exe` lokal und öffnet `start.html` im Browser
+- `update-local.bat` — kopiert `.dc.html`-Dateien + `support.js` + Logos nach `pb_public/` (automatisiert, was vorher manuell per `cp` gemacht wurde)
 - `Deployment-Anleitung.html` — Vollständige Anleitung
+- `Feature-Roadmap.dc.html`, `Kalender-Sync Konzept.dc.html`, `Testanleitung.dc.html` — interne Doku-/Planungsseiten aus dem Design Editor (kein Teil des Deploy-Ziels index/buchung/start.html)
+- `doc-page.js` — Web-Component für druckbare Doku-Seiten, von den drei Doku-`.dc.html`-Dateien genutzt
 
 ### Bekannte technische Fallstricke (für zukünftige Entwicklung)
 - `this.pb` nach Logout NICHT auf `null` setzen — nur `authStore.clear()` — sonst schlägt das nächste Login fehl

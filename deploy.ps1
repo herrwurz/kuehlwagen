@@ -75,8 +75,14 @@ $logoFile = Join-Path $uploadsPath "logo-weiss-transparent-1000.gif"
 if (Test-Path $logoFile) {
     Write-Step "Logo hochladen"
     scp $logoFile "${User}@${Server}:/root/logo-weiss-transparent-1000.gif"
-    if ($LASTEXITCODE -eq 0) { Write-Ok "Logo hochgeladen" }
+    if ($LASTEXITCODE -eq 0) { Write-Ok "Logo (weiss) hochgeladen" }
     else { Write-Host "    WARN: Logo-Upload fehlgeschlagen" -ForegroundColor Yellow }
+}
+$logoBlau = Join-Path $uploadsPath "stvalentin-logo-blau.png"
+if (Test-Path $logoBlau) {
+    scp $logoBlau "${User}@${Server}:/root/stvalentin-logo-blau.png"
+    if ($LASTEXITCODE -eq 0) { Write-Ok "Logo (blau, Rechnung/Angebot) hochgeladen" }
+    else { Write-Host "    WARN: Blaues Logo-Upload fehlgeschlagen" -ForegroundColor Yellow }
 }
 
 # Hook-Datei deployen (optional)
@@ -101,6 +107,7 @@ docker cp /root/buchung.html $CONTAINER:/pb_public/buchung.html
 docker cp /root/start.html   $CONTAINER:/pb_public/start.html
 docker cp /root/support.js   $CONTAINER:/pb_public/support.js
 docker cp /root/logo-weiss-transparent-1000.gif $CONTAINER:/pb_public/uploads/logo-weiss-transparent-1000.gif 2>/dev/null || true
+docker cp /root/stvalentin-logo-blau.png $CONTAINER:/pb_public/uploads/stvalentin-logo-blau.png 2>/dev/null || true
 # Hook in ALLE moeglichen hooksDir-Pfade kopieren (aktiv ist der CWD-relative, meist /pb/pb_hooks)
 docker exec $CONTAINER mkdir -p /pb_data/pb_hooks /pb_hooks /pb/pb_hooks
 docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_data/pb_hooks/kw_anfragen.pb.js 2>/dev/null || true
