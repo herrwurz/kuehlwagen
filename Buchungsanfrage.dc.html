@@ -187,9 +187,9 @@
 </div>
 </sc-if>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:700},&quot;pbUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://kw.hofreither.at&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Konfiguration&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:960,&quot;height&quot;:700},&quot;pbUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Konfiguration&quot;}}">
 class Component extends DCLogic {
-  PB_URL = 'https://kw.hofreither.at';
+  PB_URL = '';
   MONTHS = ['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 
   state = {
@@ -216,7 +216,7 @@ class Component extends DCLogic {
 
   loadBusyDates() {
     // Neuesten Datensatz deterministisch laden (falls mehrere kw_calendar-Records existieren)
-    const url = (this.props.pbUrl || this.PB_URL) + '/api/collections/kw_calendar/records?perPage=1&sort=-updated';
+    const url = (this.props.pbUrl || this.PB_URL || window.location.origin) + '/api/collections/kw_calendar/records?perPage=1&sort=-updated';
     fetch(url)
       .then(r => r.json())
       .then(data => {
@@ -365,7 +365,7 @@ class Component extends DCLogic {
     if (!window.PocketBase) { this.setState({ errorMsg: 'Verbindungsfehler. Bitte Seite neu laden.' }); return; }
 
     this.setState({ submitting: true, errorMsg: '' });
-    const pb = new window.PocketBase(this.props.pbUrl || this.PB_URL);
+    const pb = new window.PocketBase(this.props.pbUrl || this.PB_URL || window.location.origin);
     pb.collection('kw_booking_requests').create({
       name: f.name, email: f.email, phone: f.phone, company: f.company,
       from_date: f.fromDate, to_date: f.toDate,
