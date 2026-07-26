@@ -70,6 +70,38 @@
 
 ---
 
+## Bekannte Fixes & Entscheidungen (Stand 26.07.2026)
+
+### Kalender-Sync: Byte-Array-Korruption beim Rebuild — GELÖST
+- `calRec.get("data")` lieferte bestehende `kw_calendar`-Daten teils als rohes Byte-Array statt als String/Array
+- Der Rebuild-Hook interpretierte dadurch einzelne Bytes fälschlich als `"booked"`-Einträge (jede Zahl bestand den Filter `it.type || "booked" === "booked"`) — bestehende Kalenderdaten wurden mit Datenmüll überschrieben
+- Fix: Byte-Array wird vor der Verarbeitung zu String rekonstruiert und geparst; zusätzlicher `typeof it === "object"`-Schutz im Filter
+- **Kein `onRecordAfterDeleteSuccess`-Hook vorhanden:** Beim Löschen einer `kw_booking_requests` wird der Kalender NICHT automatisch neu aufgebaut — verwaiste `"requested"`-Einträge bleiben stehen, bis die nächste Create/Update-Aktion einen Rebuild auslöst (oder man sie manuell leert)
+
+### PB_URL in Buchungsanfrage.dc.html zeigte fest auf Produktion — GELÖST
+- `PB_URL` war hartkodiert auf `https://kw.hofreither.at` (im Gegensatz zu Kühlwagen-Verwaltung.dc.html, die schon `window.location.origin` nutzte)
+- Zusätzliche Falle: Der `data-props`-Schema-Default (`pbUrl.default`) wird vom DC-Framework automatisch als `this.props.pbUrl` gesetzt (`support.js`: `entry.propsMeta?.[k]?.default`) — ein reiner Code-Fix von `PB_URL` allein reichte NICHT, der Schema-Default musste ebenfalls auf `""` gesetzt werden
+- Folge: Jede lokale Testbuchung über `buchung.html` ging tatsächlich an die Produktions-PocketBase — inkl. echtem Mailversand an alle Mitarbeiterinnen. **Bei lokalen Tests der Buchungsseite immer per Browser-DevTools/Network-Tab verifizieren, an welche URL der POST wirklich geht**, nicht nur am UI-Ergebnis
+- Fix ist safe für Produktion & iframe-Embed (dort ist `window.location.origin` ohnehin identisch mit der Produktions-URL)
+
+### deploy.ps1: Container-Copy scheiterte an CRLF im SSH-Kommando — GELÖST
+- Der mehrzeilige Here-String (`$containerCmd`) enthielt durch die CRLF-Zeilenenden der `.ps1`-Datei eingebettete `\r\n` statt `\n`
+- Über SSH an die Linux-Bash gesendet, führte das zu `bash: -c: line X: syntax error: unexpected end of file`
+- Der komplette Container-Copy-Schritt schlug dadurch still fehl (inkl. `buchung.html`, `start.html`, `support.js`) — vermutlich schon länger, ohne dass es auffiel
+- Fix: CRLF im String vor dem SSH-Aufruf durch LF ersetzen (PowerShell `-replace` mit Backtick-r-Backtick-n → Backtick-n)
+
+### ⚠️ WICHTIG: PocketBase `indexFallback` kann fehlende Dateien verschleiern
+- Existiert eine erwartete Datei (z.B. `buchung.html`) nicht in `pb_public`, liefert PocketBase per `--indexFallback` (Default: an) automatisch den Inhalt von `index.html` zurück — mit HTTP 200, nicht 404!
+- Das täuschte eine funktionierende Buchungs-/Startseite vor, obwohl beide (vermutlich wegen des obigen CRLF-Bugs) nicht mehr im Container lagen
+- **Nach jedem Deploy verifizieren:** nicht nur Statuscode prüfen, sondern Content-Length/Last-Modified oder tatsächlichen Seiteninhalt vergleichen — bei aktivem `indexFallback` sind alle URLs (auch erfundene Pfade) identisch groß und haben dasselbe Last-Modified wie `index.html`
+
+### Superuser-Passwort lokal ≠ Produktion
+- Das lokal für den PocketBase-Superuser `andreas@hofreither.at` gesetzte Passwort authentifiziert sich **nicht** gegen den echten Produktions-Superuser (`/api/collections/_superusers/auth-with-password` schlägt fehl)
+- Es funktioniert aber gegen die normale `users`-Collection (`/api/collections/users/auth-with-password`) — für Lese-/Schreibzugriffe auf `kw_booking_requests`/`kw_calendar` reicht das (Rules verlangen nur `@request.auth.id != ""`, keine Superuser-Rolle)
+- Für echten Admin-UI-Zugriff (`/_/`) auf Produktion wird das tatsächliche, aktuelle Superuser-Passwort benötigt — ggf. per VNC Console neu setzen (siehe „PocketBase Superuser erstellen" unten)
+
+---
+
 ## Deployment-Status (Stand 26.07.2026)
 
 ### App-URLs
@@ -196,6 +228,10 @@ git checkout dev
 11. **pbRecordId Race Condition** — BEHOBEN (sessionStorage Backup, 300ms Debounce, beforeunload)
 12. **Lokale PocketBase-Entwicklungsumgebung** — FERTIG (siehe Abschnitt unten)
 13. **Root-Redirect** / → /start.html — FERTIG via Traefik-Middleware `kw-root-redirect` (Custom Labels in Coolify, Ressource `docker-image-v9j9ncs0jejdvkjiz8fuzqgw`, Router `https-0-v9j9ncs0jejdvkjiz8fuzqgw`)
+14. **dev-Branch nachgemerged** — 2 seit 02.07. unge-mergte Commits (Kalender-Sync-Hook, SSH-Key-Setup) in `main` integriert, `dev` wieder auf gleichen Stand gebracht
+15. **Kalender-Sync Byte-Array-Bug** — BEHOBEN (lokal getestet: Dedup, Status-Übergänge, Erhalt bestehender `booked`-Einträge)
+16. **PB_URL-Fix Buchungsanfrage.dc.html** — BEHOBEN (zeigte fest auf Produktion, inkl. Schema-Default-Falle; lokal per Browsertest verifiziert)
+17. **deploy.ps1 CRLF-Bug** — BEHOBEN (Container-Copy schlug wegen Windows-Zeilenenden im SSH-Kommando fehl, dadurch fehlten `buchung.html`/`start.html` tageweise in Produktion — von `indexFallback` verschleiert)
 
 ### Offene Aufgaben
 1. **Setup-Guide** für Git/Deploy erstellen
@@ -219,7 +255,7 @@ Kein Autostart eingerichtet — muss nach jedem Neustart manuell gestartet werde
 Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (kein `PB_URL`-Umschalter nötig) — Voraussetzung ist, dass sie aus dem `pb_public`-Ordner desselben PocketBase-Servers ausgeliefert wird.
 
 ### Zugangsdaten (nur lokal!)
-- Superuser `andreas@hofreither.at` — gleiches Passwort wie Prod
+- Superuser `andreas@hofreither.at` — Passwort sollte identisch zu Prod sein, ist es aber laut Test nicht (siehe „Superuser-Passwort lokal ≠ Produktion" oben) — lokal frei wählbar, unabhängig von Produktion
 - Normale User (Login in der App): `andreas@hofreither.at`, `ulrike.gruber@valentinum.at`, `christa.pitschmann@valentinum.at` — alle mit Passwort `lokal1234`
 
 ### Bekannte Einschränkungen
