@@ -90,6 +90,14 @@
 - Der komplette Container-Copy-Schritt schlug dadurch still fehl (inkl. `buchung.html`, `start.html`, `support.js`) — vermutlich schon länger, ohne dass es auffiel
 - Fix: CRLF im String vor dem SSH-Aufruf durch LF ersetzen (PowerShell `-replace` mit Backtick-r-Backtick-n → Backtick-n)
 
+### ⚠️ KRITISCH: Genehmigte Online-Anfragen wurden nie in PocketBase gespeichert — GELÖST
+- **Root Cause 1:** Der `StreamableComponent`-Wrapper in `support.js` rief `this.logic.componentDidUpdate(prevProps)` ohne zweites Argument auf. In `Kühlwagen-Verwaltung.dc.html` erwartet `componentDidUpdate(pp,ps)` aber `ps` (prevState) — war dadurch bei **jedem** Aufruf `undefined` → `TypeError: Cannot read properties of undefined (reading 'pbRecordId')`. Der Fehler wurde vom Wrapper stillschweigend abgefangen (`catch(e){console.error(e)}`), verhinderte aber, dass die Autosave-Logik (`saveToPB()` bei Bookings-Änderung) jemals ausgeführt wurde
+- **Root Cause 2 (verschärfend):** `approveAnfrage()` ruft direkt nach `this.setState({bookings:...})` noch `this.toast(...)` auf, was ebenfalls `setState` aufruft. Durch React-Batching laufen beide synchron vor dem nächsten Render — ein naiver "prevState mitgeben"-Fix reicht nicht, weil der zweite Aufruf den State-Snapshot des ersten überschreibt, bevor `componentDidUpdate` feuert
+- **Fix (in `support.js`):** `__setLogicState()` merkt sich den State nur beim ersten Aufruf innerhalb eines synchronen Batches (`__hasPendingPrev`-Flag), `componentDidUpdate` gibt diesen Snapshot korrekt weiter und setzt das Flag danach zurück
+- **Auswirkung:** Klick auf "Genehmigen + Buchung anlegen" im Anfragen-Tab zeigte die neue Buchung korrekt in der UI an, speicherte sie aber NUR im flüchtigen React-State — nicht in PocketBase, nicht im sessionStorage-Backup. Bei Tab-Schließen/Reload war die Buchung komplett weg, obwohl die Anfrage schon als „approved" markiert war
+- Lokal reproduziert und nach Fix verifiziert (Buchung landet korrekt in `kw_state.bookings`); am 26.07.2026 auch nach Produktion deployt
+- ⚠️ **`support.js` wird ggf. vom Claude Design Editor neu synchronisiert** — dieser Fix muss dann erneut angewendet werden (Diff: siehe Commit "Fix: Genehmigte Online-Anfragen wurden nie in PocketBase gespeichert")
+
 ### ⚠️ WICHTIG: PocketBase `indexFallback` kann fehlende Dateien verschleiern
 - Existiert eine erwartete Datei (z.B. `buchung.html`) nicht in `pb_public`, liefert PocketBase per `--indexFallback` (Default: an) automatisch den Inhalt von `index.html` zurück — mit HTTP 200, nicht 404!
 - Das täuschte eine funktionierende Buchungs-/Startseite vor, obwohl beide (vermutlich wegen des obigen CRLF-Bugs) nicht mehr im Container lagen
@@ -232,6 +240,7 @@ git checkout dev
 15. **Kalender-Sync Byte-Array-Bug** — BEHOBEN (lokal getestet: Dedup, Status-Übergänge, Erhalt bestehender `booked`-Einträge)
 16. **PB_URL-Fix Buchungsanfrage.dc.html** — BEHOBEN (zeigte fest auf Produktion, inkl. Schema-Default-Falle; lokal per Browsertest verifiziert)
 17. **deploy.ps1 CRLF-Bug** — BEHOBEN (Container-Copy schlug wegen Windows-Zeilenenden im SSH-Kommando fehl, dadurch fehlten `buchung.html`/`start.html` tageweise in Produktion — von `indexFallback` verschleiert)
+18. **KRITISCH: Genehmigte Anfragen nie gespeichert** — BEHOBEN (support.js-Framework-Bug verhinderte Autosave nach „Genehmigen + Buchung anlegen"; lokal verifiziert und nach Produktion deployt)
 
 ### Offene Aufgaben
 1. **Setup-Guide** für Git/Deploy erstellen
@@ -267,6 +276,8 @@ Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (k
   cp "Startseite.dc.html" pb_public/start.html
   cp "support.js" pb_public/support.js
   ```
+- **Lokal per API angelegte Collections fehlen `created`/`updated`-Felder:** Beim initialen Erstellen von `kw_state`/`kw_calendar`/`kw_booking_requests` per Roh-API (statt Admin-UI) wurden die Standard-Autodate-Felder `created`/`updated` NICHT automatisch ergänzt (die Admin-UI macht das automatisch, die REST-API nicht). Jede Query mit `sort=-created` oder `sort=-updated` schlug dadurch mit HTTP 400 fehl — u.a. `loadAnfragen()` in der Verwaltungs-App, wodurch der Anfragen-Tab dauerhaft leer blieb, obwohl Datensätze existierten. Fix: `created`/`updated` als `autodate`-Felder nachträglich per `PATCH /api/collections/<name>` ergänzt. Bei künftigen lokalen Collection-Neuanlagen per API immer explizit mit anlegen.
+- **Bash/Windows UTF-8-Falle bei curl `-d`:** Inline-JSON mit Umlauten (z.B. `-d '{"name":"Kühlkoffer"}'`) über die Bash-Kommandozeile führt zu kaputter Kodierung (`Kühlkoffer` → `K�hlkoffer`). Für JSON-Payloads mit Sonderzeichen immer eine Datei schreiben und `--data-binary @datei.json` verwenden, nie `-d '...'` inline.
 
 ### Schema-Migrationen
 `pb_migrations/` ist **versioniert** (im Gegensatz zu `pb_data/`) und enthält die automatisch generierten Migrationen für `kw_state`, `kw_calendar`, `kw_booking_requests`. Bei neuen Collections/Feldern legt PocketBase automatisch neue Dateien dort an — die sollten mitcommittet werden, damit das Schema reproduzierbar bleibt.
