@@ -13,7 +13,7 @@
 - **IP:** 116.203.141.156
 - **Domain:** kw.hofreither.at (DNS korrekt gesetzt, SSL aktiv)
 - **Zugang:** Hetzner VNC Console (browser-basiert) oder SSH root@116.203.141.156
-- **Root-Passwort:** KW2026root (bitte ändern!)
+- **Root-Passwort:** Kuehlwagen2026
 
 ### PocketBase Container
 - **Image:** ghcr.io/muchobien/pocketbase:latest
@@ -64,6 +64,12 @@ echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 service ssh restart
 # known_hosts löschen falls nötig:
 ssh-keygen -R 116.203.141.156
+```
+
+⚠️ Falls SSH trotz korrektem Passwort mit "Authentication failed" scheitert: fail2ban kann die eigene IP nach ein paar Fehlversuchen sperren. Nur über die Hetzner VNC Console behebbar:
+```bash
+fail2ban-client status sshd        # gesperrte IPs anzeigen
+fail2ban-client set sshd unbanip <IP>
 ```
 
 ### Hook-Datei deployen
