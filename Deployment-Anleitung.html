@@ -168,26 +168,22 @@ Destination:  <span class="s">/pb_data</span>
   <!-- SCHRITT 3: Frontend deployen -->
   <h2><span class="num">3</span> Frontend in PocketBase ablegen</h2>
   <div class="card blue">
-    <p>Alle drei Frontend-Seiten werden direkt im PocketBase-Container unter <code>pb_public/</code> abgelegt. So läuft alles unter einer einzigen Domain — kein zweiter Service nötig.</p>
+    <p><strong>Aktuelles Modell (seit 02.07.2026):</strong> Die drei <code>.dc.html</code>-Dateien (Design Components) werden <em>direkt</em> — nicht als Standalone-Export — als <code>index.html</code>/<code>buchung.html</code>/<code>start.html</code> nach <code>pb_public/</code> kopiert. Eine gemeinsame <code>support.js</code> wird zusätzlich nach <code>pb_public/support.js</code> deployt und von allen drei Seiten per absolutem Pfad (<code>/support.js</code>) eingebunden. Kein Standalone-Export mehr nötig.</p>
     <table style="margin-bottom:10px">
-      <tr><th>Standalone-Datei</th><th>Ziel in <code>pb_public</code></th><th>URL</th></tr>
-      <tr><td><code>Kühlwagen-Verwaltung-standalone.html</code></td><td><code>index.html</code></td><td><code>/index.html</code></td></tr>
-      <tr><td><code>Buchungsanfrage-standalone.html</code></td><td><code>buchung.html</code></td><td><code>/buchung.html</code></td></tr>
-      <tr><td><code>Startseite-standalone.html</code></td><td><code>start.html</code></td><td><code>/start.html</code></td></tr>
+      <tr><th>Quelldatei</th><th>Ziel in <code>pb_public</code></th><th>URL</th></tr>
+      <tr><td><code>Kühlwagen-Verwaltung.dc.html</code></td><td><code>index.html</code></td><td><code>/index.html</code></td></tr>
+      <tr><td><code>Buchungsanfrage.dc.html</code></td><td><code>buchung.html</code></td><td><code>/buchung.html</code></td></tr>
+      <tr><td><code>Startseite.dc.html</code></td><td><code>start.html</code></td><td><code>/start.html</code></td></tr>
+      <tr><td><code>support.js</code></td><td><code>support.js</code></td><td><code>/support.js</code></td></tr>
     </table>
     <div class="step">
       <div class="dot">1</div>
       <div class="body">
-        <strong>Dateien in den Container kopieren</strong>
-        Über Coolify → Terminal des laufenden Containers, oder via SSH + Docker:
-        <pre><span class="c"># Container-ID herausfinden:</span>
-docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase
-
-<span class="c"># HTML-Dateien in pb_public kopieren:</span>
-docker cp index.html   <span class="k">&lt;container-id&gt;</span>:/pb_public/index.html
-docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb_public/buchung.html
-docker cp start.html   <span class="k">&lt;container-id&gt;</span>:/pb_public/start.html</pre>
-        <div class="tip">Alternativ: In Coolify unter <em>File Manager</em> direkt hochladen, falls verfügbar.</div>
+        <strong>Deploy-Script ausführen</strong>
+        <pre><span class="c"># Im Repo-Ordner (C:\Projekte\kuehlwagen):</span>
+.\deploy.bat</pre>
+        Führt <code>deploy.ps1</code> aus: sucht die drei <code>.dc.html</code>-Dateien + <code>support.js</code> im Repo, lädt sie per SCP hoch und kopiert sie per <code>docker cp</code> in <code>pb_public/</code>. Kein Container-Neustart nötig (reines Frontend).
+        <div class="tip">Voraussetzung: SSH-Zugang funktioniert (<code>setup-ssh-key.ps1</code> einmalig ausführen, dann kein Passwort mehr nötig). <code>support.js</code> Pfad im HTML muss absolut sein (<code>/support.js</code>), sonst falscher Pfad je nach URL.</div>
       </div>
     </div>
     <div class="step">
@@ -202,12 +198,13 @@ docker cp start.html   <span class="k">&lt;container-id&gt;</span>:/pb_public/st
   <!-- SCHRITT 4: Updates einspielen -->
   <h2><span class="num">4</span> Updates einspielen</h2>
   <div class="card orange">
-    <p>Wenn du eine neue Version einer der drei Seiten hast:</p>
+    <p>Wenn du eine neue Version einer der drei Seiten hast (per VS Code oder Claude Design Editor bearbeitet):</p>
     <ol>
-      <li>Standalone-HTML neu generieren/exportieren</li>
-      <li>Per <code>docker cp</code> in den Container kopieren (Schritt 3.1)</li>
+      <li>Geänderte <code>.dc.html</code> im Repo-Ordner ablegen (falls über Claude bearbeitet: Datei herunterladen und im Ordner ersetzen)</li>
+      <li><code>.\deploy.bat</code> ausführen</li>
       <li>Fertig — die App zeigt die neue Version beim nächsten Browser-Reload</li>
     </ol>
+    <div class="tip">Nur bei Änderungen an <code>pb_hooks/kw_anfragen.pb.js</code>: stattdessen <code>.\deploy-hooks.bat</code> verwenden — deployed zusätzlich den Hook und startet den Container neu (nötig, damit PocketBase den Hook neu lädt).</div>
   </div>
 
   <!-- SCHRITT 5: Datensicherung -->
@@ -347,32 +344,36 @@ traefik.http.routers.https-0-&lt;uuid&gt;.middlewares=<span class="s">gzip,kw-ro
   <!-- SCHRITT 9: Git-Workflow -->
   <h2><span class="num">9</span> Git-Workflow &amp; Deploy</h2>
   <div class="card green">
-    <p>Arbeitsordner: <code>C:\Projekte\kuehlwagen</code> · Repo: <code>https://github.com/herrwurz/kuehlwagen</code> · Branch: <code>main</code> (es gibt aktuell keinen separaten <code>dev</code>-Branch mehr im laufenden Workflow — Änderungen gehen direkt auf <code>main</code>).</p>
+    <p>Arbeitsordner: <code>C:\Projekte\kuehlwagen</code> · Repo: <code>https://github.com/herrwurz/kuehlwagen</code> · Branches: <code>main</code> (Prod) und <code>dev</code> (Entwicklung) — beide aktuell auf demselben Stand.</p>
+    <div class="warn"><strong>Lektion vom 26.07.2026:</strong> Zwei Commits lagen seit 02.07. unge-merged auf <code>dev</code> (Kalender-Sync-Hook, SSH-Key-Setup) und mussten nachträglich in <code>main</code> nachgezogen werden. Nach Feature-Arbeit auf <code>dev</code> zeitnah nach <code>main</code> mergen, nicht aufschieben.</div>
 
     <h3>Änderung committen</h3>
-    <pre>git add &lt;datei&gt;
+    <pre>git checkout dev
+git add &lt;datei&gt;
 git commit -m <span class="s">"Beschreibung der Änderung"</span>
-git push origin main</pre>
+git push origin dev
+git checkout main
+git merge dev --no-edit
+git push origin main
+git checkout dev</pre>
 
     <h3>Frontend-Änderung deployen</h3>
-    <pre><span class="c"># 1. Standalone-HTML(s) hochladen:</span>
-scp "Kühlwagen-Verwaltung-standalone.html" root@116.203.141.156:/root/index.html
-scp "Buchungsanfrage-standalone.html"      root@116.203.141.156:/root/buchung.html
-scp "Startseite-standalone.html"           root@116.203.141.156:/root/start.html
-
-<span class="c"># 2. Container-ID finden + Dateien kopieren (SSH):</span>
-CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
-docker cp /root/index.html   $CONTAINER:/pb_public/index.html
-docker cp /root/buchung.html $CONTAINER:/pb_public/buchung.html
-docker cp /root/start.html   $CONTAINER:/pb_public/start.html</pre>
+    <p>Aktuelles Modell: <code>.dc.html</code>-Dateien + <code>support.js</code> direkt (kein Standalone-Export), siehe Schritt 3.</p>
+    <pre><span class="c"># Im Repo-Ordner:</span>
+.\deploy.bat</pre>
 
     <h3>Hook-Änderung (pb_hooks/kw_anfragen.pb.js) deployen</h3>
+    <pre><span class="c"># Im Repo-Ordner — deployed Frontend + Hook, startet Container neu:</span>
+.\deploy-hooks.bat</pre>
+    <p>Manuell (falls die Scripts nicht verfügbar sind) — in <strong>alle drei</strong> Kandidaten-Pfade kopieren, da der aktive <code>hooksDir</code>-Pfad variieren kann:</p>
     <pre>scp "pb_hooks\kw_anfragen.pb.js" root@116.203.141.156:/root/kw_anfragen.pb.js
 
 <span class="c"># dann via SSH:</span>
 CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
-docker exec $CONTAINER mkdir -p /pb_data/pb_hooks
+docker exec $CONTAINER mkdir -p /pb_data/pb_hooks /pb_hooks /pb/pb_hooks
 docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_data/pb_hooks/kw_anfragen.pb.js
+docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_hooks/kw_anfragen.pb.js
+docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb/pb_hooks/kw_anfragen.pb.js
 docker restart $CONTAINER   <span class="c"># nötig, damit der Hook geladen wird</span></pre>
 
     <div class="warn">
@@ -386,7 +387,7 @@ fail2ban-client set sshd unbanip <span class="k">&lt;IP&gt;</span></pre>
 
     <h3>GitHub Repo</h3>
     <pre>https://github.com/herrwurz/kuehlwagen
-Branch: main</pre>
+Branches: main (Prod), dev (Entwicklung)</pre>
   </div>
 
   <!-- SCHRITT 10: Lokale Entwicklungsumgebung -->
@@ -418,10 +419,11 @@ Branch: main</pre>
     <div class="step">
       <div class="dot">4</div>
       <div class="body">
-        <strong>Frontend-Dateien nach <code>pb_public/</code> kopieren</strong>
-        <pre>cp "Kühlwagen-Verwaltung-standalone.html" pb_public/index.html
-cp "Buchungsanfrage-standalone.html"      pb_public/buchung.html
-cp "Startseite-standalone.html"           pb_public/start.html</pre>
+        <strong>Frontend-Dateien nach <code>pb_public/</code> kopieren</strong> (gleiches DC+support.js-Modell wie Produktion, siehe Schritt 3):
+        <pre>cp "Kühlwagen-Verwaltung.dc.html" pb_public/index.html
+cp "Buchungsanfrage.dc.html"      pb_public/buchung.html
+cp "Startseite.dc.html"           pb_public/start.html
+cp "support.js"                   pb_public/support.js</pre>
         Die App erkennt die PocketBase-URL automatisch über <code>window.location.origin</code> — kein manuelles Umschalten von <code>PB_URL</code> nötig, solange sie aus demselben <code>pb_public</code>-Ordner ausgeliefert wird.
       </div>
     </div>

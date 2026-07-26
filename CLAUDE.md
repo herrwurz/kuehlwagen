@@ -5,7 +5,7 @@
 **Zwei gleichwertige Wege — beide enden bei deploy.bat:**
 
 **Weg 1: Code-Fixes (VS Code)**
-1. `.dc.html` in VS Code (`Downloads\kuehlwagen\`) bearbeiten
+1. `.dc.html` in VS Code (`C:\Projekte\kuehlwagen\`) bearbeiten
 2. `deploy.bat` ausführen → DC-Dateien + `support.js` direkt auf Server
 
 **Weg 2: UI-Änderungen (Claude)**
@@ -114,17 +114,21 @@ docker exec <container-id> /usr/local/bin/pocketbase superuser upsert andreas@ho
 - Sender: rathaus@st-valentin.at / Kühlwagen-Verleih St. Valentin
 
 ### Deployment (Dateien auf Server)
-```powershell
-# Per SCP hochladen:
-scp "$env:USERPROFILE\Downloads\index.html" root@116.203.141.156:/root/index.html
-scp "$env:USERPROFILE\Downloads\buchung.html" root@116.203.141.156:/root/buchung.html
-scp "$env:USERPROFILE\Downloads\start.html" root@116.203.141.156:/root/start.html
+**Aktueller Weg:** `.\deploy.bat` im Repo-Ordner ausführen (Doppelklick oder PowerShell). Deployed direkt die `.dc.html`-Dateien + `support.js` (kein Standalone-Export mehr nötig, siehe „Arbeitsweise / Workflow" oben) an `index.html`, `buchung.html`, `start.html` in `pb_public/`. Voraussetzung: SSH-Key eingerichtet (`setup-ssh-key.ps1` einmalig ausführen) oder Passwort zur Hand.
 
-# In Container kopieren (VNC Console):
+Manuell (falls `deploy.bat` nicht verfügbar ist):
+```powershell
+scp "Kühlwagen-Verwaltung.dc.html" root@116.203.141.156:/root/index.html
+scp "Buchungsanfrage.dc.html"      root@116.203.141.156:/root/buchung.html
+scp "Startseite.dc.html"           root@116.203.141.156:/root/start.html
+scp "support.js"                   root@116.203.141.156:/root/support.js
+
+# In Container kopieren:
 CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
-docker cp /root/index.html $CONTAINER:/pb_public/index.html
+docker cp /root/index.html   $CONTAINER:/pb_public/index.html
 docker cp /root/buchung.html $CONTAINER:/pb_public/buchung.html
-docker cp /root/start.html $CONTAINER:/pb_public/start.html
+docker cp /root/start.html   $CONTAINER:/pb_public/start.html
+docker cp /root/support.js   $CONTAINER:/pb_public/support.js
 ```
 
 ### SSH-Zugang aktivieren (falls Permission denied)
@@ -143,24 +147,29 @@ fail2ban-client set sshd unbanip <IP>
 ```
 
 ### Hook-Datei deployen
+**Aktueller Weg:** `.\deploy-hooks.bat` im Repo-Ordner ausführen — deployed Frontend + Hook und startet den Container neu (nötig, damit der Hook geladen wird).
+
+Manuell: Datei in **alle drei** Kandidaten-Pfade kopieren, da der tatsächlich aktive Pfad je nach PocketBase-Startkonfiguration variiert (`hooksDir` ist CWD-relativ; aktiv beobachtet: `/pb/pb_hooks`):
 ```powershell
-scp "$env:USERPROFILE\Downloads\kw_anfragen.pb.js" root@116.203.141.156:/root/kw_anfragen.pb.js
+scp "pb_hooks\kw_anfragen.pb.js" root@116.203.141.156:/root/kw_anfragen.pb.js
 ```
 ```bash
 CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
-docker exec $CONTAINER mkdir -p /pb_data/pb_hooks
+docker exec $CONTAINER mkdir -p /pb_data/pb_hooks /pb_hooks /pb/pb_hooks
 docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_data/pb_hooks/kw_anfragen.pb.js
+docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_hooks/kw_anfragen.pb.js
+docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb/pb_hooks/kw_anfragen.pb.js
 docker restart $CONTAINER
 ```
 
 ### Git-Workflow
 - **Repo:** https://github.com/herrwurz/kuehlwagen
-- **Branches:** main (Prod), dev (Entwicklung)
-- **Lokaler Ordner:** `$env:USERPROFILE\Downloads\kuehlwagen`
+- **Branches:** main (Prod), dev (Entwicklung) — beide aktuell auf demselben Stand (26.07.2026 gemerged)
+- **Lokaler Ordner:** `C:\Projekte\kuehlwagen`
 
 ```powershell
 # Commit & Deploy:
-cd "$env:USERPROFILE\Downloads\kuehlwagen"
+cd C:\Projekte\kuehlwagen
 git checkout dev
 git add .
 git commit -m "Beschreibung"
@@ -170,6 +179,8 @@ git merge dev --no-edit
 git push origin main
 git checkout dev
 ```
+
+⚠️ **Am 26.07.2026 mussten 2 seit 02.07. auf `dev` liegende, nie gemergte Commits nachträglich in `main` gemerged werden** (Kalender-Sync-Hook, SSH-Key-Setup u.a. waren dadurch bis dahin nicht in `main`/Produktion aktiv, obwohl sie schon länger auf dem Server liefen). Um das zu vermeiden: nach Feature-Arbeit auf `dev` möglichst zeitnah nach `main` mergen, nicht wochenlang aufschieben.
 
 ### ✅ Erledigte Aufgaben
 1. **index.html** — FERTIG (https://kw.hofreither.at/index.html)
@@ -213,27 +224,29 @@ Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (k
 
 ### Bekannte Einschränkungen
 - **SMTP nicht konfiguriert** — E-Mail-Hooks (`pb_hooks/kw_anfragen.pb.js`) laufen zwar, aber es wird lokal keine echte Mail verschickt. Für Tests müsste in der lokalen PB-Admin-UI ein SMTP-Server (z.B. Mailtrap) hinterlegt werden.
-- `pb_public/` wird nicht neu befüllt, wenn sich die Standalone-HTMLs ändern — nach Änderungen manuell neu kopieren:
+- `pb_public/` wird nicht automatisch aktualisiert — nach Änderungen an den `.dc.html`-Dateien oder `support.js` manuell neu kopieren (gleiches DC+support.js-Modell wie Produktion):
   ```powershell
-  cp "Kühlwagen-Verwaltung-standalone.html" pb_public/index.html
-  cp "Buchungsanfrage-standalone.html" pb_public/buchung.html
-  cp "Startseite-standalone.html" pb_public/start.html
+  cp "Kühlwagen-Verwaltung.dc.html" pb_public/index.html
+  cp "Buchungsanfrage.dc.html" pb_public/buchung.html
+  cp "Startseite.dc.html" pb_public/start.html
+  cp "support.js" pb_public/support.js
   ```
 
 ### Schema-Migrationen
 `pb_migrations/` ist **versioniert** (im Gegensatz zu `pb_data/`) und enthält die automatisch generierten Migrationen für `kw_state`, `kw_calendar`, `kw_booking_requests`. Bei neuen Collections/Feldern legt PocketBase automatisch neue Dateien dort an — die sollten mitcommittet werden, damit das Schema reproduzierbar bleibt.
 
 ### Projektdateien
-- `Kühlwagen-Verwaltung.dc.html` — Hauptapp (Design Component)
-- `Kühlwagen-Verwaltung-standalone.html` — Self-contained für pb_public (→ index.html)
-- `Buchungsanfrage.dc.html` — Öffentliche Buchungsseite
-- `Buchungsanfrage-standalone.html` — Self-contained (→ buchung.html)
-- `Startseite.dc.html` — Einstiegsseite mit 2 Buttons
-- `Startseite-standalone.html` — Self-contained (→ start.html)
-- `pb_hooks/kw_anfragen.pb.js` — E-Mail-Hooks für PocketBase
+- `Kühlwagen-Verwaltung.dc.html` — Hauptapp (Design Component), wird direkt deployt (→ index.html)
+- `Buchungsanfrage.dc.html` — Öffentliche Buchungsseite (→ buchung.html)
+- `Startseite.dc.html` — Einstiegsseite mit 2 Buttons (→ start.html)
+- `support.js` — gemeinsame JS-Library aller drei Seiten, wird mitdeployt (→ /support.js)
+- `*-standalone.html` — **veraltet**, seit 02.07.2026 nicht mehr im Deploy-Prozess verwendet (deploy.ps1 nutzt die `.dc.html`-Dateien direkt)
+- `pb_hooks/kw_anfragen.pb.js` — E-Mail- und Kalender-Sync-Hooks für PocketBase
 - `pb_migrations/` — Schema-Migrationen (versioniert, siehe „Lokale Entwicklungsumgebung")
-- `deploy.ps1` — Deploy-Script (SCP + Container-Copy)
-- `commit-and-deploy.ps1` — Git-Commit + Deploy kombiniert
+- `deploy.ps1` / `deploy.bat` — Deploy-Script (SCP + Container-Copy)
+- `deploy-hooks.bat` — wie deploy.bat, zusätzlich Hook-Update + Container-Neustart
+- `setup-ssh-key.ps1` — einmalig ausführen, dann kein Passwort mehr bei deploy.bat nötig
+- `commit-and-deploy.ps1` — Git-Commit + Deploy kombiniert (referenziert alten Downloads-Pfad, ggf. veraltet)
 - `Deployment-Anleitung.html` — Vollständige Anleitung
 
 ### Bekannte technische Fallstricke (für zukünftige Entwicklung)
