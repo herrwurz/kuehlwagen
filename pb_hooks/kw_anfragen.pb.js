@@ -157,7 +157,9 @@ onRecordAfterUpdateSuccess((e) => {
   const confirmed = data.bookings.filter(b =>
     b.status === "bestätigt" && b.email && b._mailSent !== true
   );
+  if (confirmed.length === 0) return;
 
+  let anySent = false;
   for (const b of confirmed) {
     const htmlMail = `
       <div style="font-family:sans-serif;max-width:580px;margin:0 auto;background:#f4f7fb;padding:20px">
@@ -202,9 +204,25 @@ onRecordAfterUpdateSuccess((e) => {
         subject: "Buchungsbestätigung " + (b.id || '') + " – Kühlwagen-Verleih St. Valentin",
         html: htmlMail
       }));
+      b._mailSent = true;
+      anySent = true;
       console.log("kw_buchung: Bestätigungsmail gesendet an", b.email);
     } catch (err) {
       console.error("kw_buchung: Fehler beim Mail-Versand:", err);
     }
+  }
+
+  // _mailSent zurückschreiben, damit bei den häufigen Autosaves (alle 300ms)
+  // keine Dubletten verschickt werden. Löst denselben Hook erneut aus, aber
+  // dann ist confirmed.length === 0 (bzw. unverändert falls kein Versand
+  // erfolgreich war) und er kehrt oben sofort zurück bzw. speichert nicht
+  // erneut — sonst würde ein dauerhafter SMTP-Fehler eine Endlosschleife
+  // aus Save-Aufrufen auslösen.
+  if (!anySent) return;
+  try {
+    r.set("data", data);
+    $app.save(r);
+  } catch (err) {
+    console.error("kw_buchung: Fehler beim Speichern von _mailSent:", err);
   }
 }, "kw_state");
