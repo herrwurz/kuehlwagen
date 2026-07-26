@@ -36,7 +36,16 @@ onRecordAfterCreateSuccess((e) => {
     if (calRec) {
       let raw = calRec.get("data");
       if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch (ee) { raw = []; } }
-      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && (it.type || "booked") === "booked") booked.push(it); } }
+      else if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === "number") {
+        // PocketBase liefert JSON-Felder manchmal als rohes Byte-Array statt als String/Objekt —
+        // ohne diese Rekonstruktion würden einzelne Bytes als kaputte "booked"-Einträge landen.
+        try {
+          let s = "";
+          for (let k = 0; k < raw.length; k++) s += String.fromCharCode(raw[k]);
+          raw = JSON.parse(s);
+        } catch (ee) { raw = []; }
+      }
+      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && typeof it === "object" && (it.type || "booked") === "booked") booked.push(it); } }
     }
     const merged = booked.concat(requested);
     if (calRec) {
@@ -136,7 +145,16 @@ onRecordAfterUpdateSuccess((e) => {
     if (calRec) {
       let raw = calRec.get("data");
       if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch (ee) { raw = []; } }
-      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && (it.type || "booked") === "booked") booked.push(it); } }
+      else if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === "number") {
+        // PocketBase liefert JSON-Felder manchmal als rohes Byte-Array statt als String/Objekt —
+        // ohne diese Rekonstruktion würden einzelne Bytes als kaputte "booked"-Einträge landen.
+        try {
+          let s = "";
+          for (let k = 0; k < raw.length; k++) s += String.fromCharCode(raw[k]);
+          raw = JSON.parse(s);
+        } catch (ee) { raw = []; }
+      }
+      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && typeof it === "object" && (it.type || "booked") === "booked") booked.push(it); } }
     }
     const merged = booked.concat(requested);
     if (calRec) {
