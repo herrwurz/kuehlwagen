@@ -104,7 +104,7 @@ Port:     <span class="k">8090</span>
       <div class="body">
         <strong>Persistentes Volume anlegen</strong>
         <pre>Source:       <span class="s">pb_data</span>   <span class="c">(persistent volume)</span>
-Destination:  <span class="s">/pb/pb_data</span>
+Destination:  <span class="s">/pb_data</span>
 </pre>
         <span class="warn">Ohne dieses Volume gehen alle Daten beim Neustart verloren!</span>
       </div>
@@ -154,11 +154,12 @@ Destination:  <span class="s">/pb/pb_data</span>
       <div class="dot">3</div>
       <div class="body">
         <strong>Benutzer anlegen</strong>
-        <em>Users</em> → <em>New record</em> — für jede Dame einen Account:<br><br>
+        <em>Users</em> → <em>New record</em> — für jede Mitarbeiterin einen Account:<br><br>
         <table>
-          <tr><th>Name</th><th>E-Mail</th><th>Passwort</th></tr>
-          <tr><td>Dame 1</td><td><code>dame1@hofreither.at</code></td><td><em>(sicher wählen)</em></td></tr>
-          <tr><td>Dame 2</td><td><code>dame2@hofreither.at</code></td><td><em>(sicher wählen)</em></td></tr>
+          <tr><th>Name</th><th>E-Mail</th><th>Rolle</th></tr>
+          <tr><td>Andreas Hofreither</td><td><code>andreas@hofreither.at</code></td><td>Superuser + normaler User</td></tr>
+          <tr><td>Ulrike Gruber</td><td><code>ulrike.gruber@valentinum.at</code></td><td>Mitarbeiterin</td></tr>
+          <tr><td>Christa Pitschmann</td><td><code>christa.pitschmann@valentinum.at</code></td><td>Mitarbeiterin</td></tr>
         </table>
       </div>
     </div>
@@ -167,33 +168,33 @@ Destination:  <span class="s">/pb/pb_data</span>
   <!-- SCHRITT 3: Frontend deployen -->
   <h2><span class="num">3</span> Frontend in PocketBase ablegen</h2>
   <div class="card blue">
-    <p>Das Frontend wird als <code>index.html</code> direkt im PocketBase-Container abgelegt. So läuft alles unter einer einzigen Domain — kein zweiter Service nötig.</p>
+    <p>Alle drei Frontend-Seiten werden direkt im PocketBase-Container unter <code>pb_public/</code> abgelegt. So läuft alles unter einer einzigen Domain — kein zweiter Service nötig.</p>
+    <table style="margin-bottom:10px">
+      <tr><th>Standalone-Datei</th><th>Ziel in <code>pb_public</code></th><th>URL</th></tr>
+      <tr><td><code>Kühlwagen-Verwaltung-standalone.html</code></td><td><code>index.html</code></td><td><code>/index.html</code></td></tr>
+      <tr><td><code>Buchungsanfrage-standalone.html</code></td><td><code>buchung.html</code></td><td><code>/buchung.html</code></td></tr>
+      <tr><td><code>Startseite-standalone.html</code></td><td><code>start.html</code></td><td><code>/start.html</code></td></tr>
+    </table>
     <div class="step">
       <div class="dot">1</div>
       <div class="body">
-        <strong>Standalone-HTML vorbereiten</strong>
-        Die Datei <code>Kühlwagen-Verwaltung-standalone.html</code> zu <code>index.html</code> umbenennen.
+        <strong>Dateien in den Container kopieren</strong>
+        Über Coolify → Terminal des laufenden Containers, oder via SSH + Docker:
+        <pre><span class="c"># Container-ID herausfinden:</span>
+docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase
+
+<span class="c"># HTML-Dateien in pb_public kopieren:</span>
+docker cp index.html   <span class="k">&lt;container-id&gt;</span>:/pb_public/index.html
+docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb_public/buchung.html
+docker cp start.html   <span class="k">&lt;container-id&gt;</span>:/pb_public/start.html</pre>
+        <div class="tip">Alternativ: In Coolify unter <em>File Manager</em> direkt hochladen, falls verfügbar.</div>
       </div>
     </div>
     <div class="step">
       <div class="dot">2</div>
       <div class="body">
-        <strong>Datei in den Container kopieren</strong>
-        Über Coolify → Terminal des laufenden Containers, oder via SSH + Docker:
-        <pre><span class="c"># Container-ID herausfinden:</span>
-docker ps | grep pocketbase
-
-<span class="c"># HTML in pb_public kopieren:</span>
-docker cp index.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/index.html</pre>
-        <div class="tip">Alternativ: In Coolify unter <em>File Manager</em> direkt hochladen, falls verfügbar.</div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="dot">3</div>
-      <div class="body">
         <strong>Fertig! App aufrufen:</strong>
-        <code>https://kw.hofreither.at/index.html</code><br>
-        Login-Maske erscheint → mit den angelegten Benutzer-Accounts anmelden.
+        <code>https://kw.hofreither.at/start.html</code> (Einstieg) → <code>index.html</code> (Verwaltung, Login) oder <code>buchung.html</code> (öffentliche Anfrage).
       </div>
     </div>
   </div>
@@ -201,14 +202,12 @@ docker cp index.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/i
   <!-- SCHRITT 4: Updates einspielen -->
   <h2><span class="num">4</span> Updates einspielen</h2>
   <div class="card orange">
-    <p>Wenn du eine neue Version der App entwickelt hast:</p>
+    <p>Wenn du eine neue Version einer der drei Seiten hast:</p>
     <ol>
-      <li>In diesem Projekt <strong>standalone HTML neu generieren</strong> (super_inline_html)</li>
-      <li>Zu <code>index.html</code> umbenennen</li>
-      <li>Per <code>docker cp</code> in den Container kopieren (Schritt 3.2)</li>
-      <li>Fertig — die Damen sehen die neue Version beim nächsten Browser-Reload</li>
+      <li>Standalone-HTML neu generieren/exportieren</li>
+      <li>Per <code>docker cp</code> in den Container kopieren (Schritt 3.1)</li>
+      <li>Fertig — die App zeigt die neue Version beim nächsten Browser-Reload</li>
     </ol>
-    <div class="tip">Optional: GitHub Actions kann den Copy-Schritt automatisieren — dann reicht ein <code>git push</code>.</div>
   </div>
 
   <!-- SCHRITT 5: Datensicherung -->
@@ -216,36 +215,19 @@ docker cp index.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/i
   <div class="card green">
     <h3>Automatisches Backup (empfohlen)</h3>
     <p>PocketBase hat ein eingebautes Backup-System:</p>
-    <pre><span class="c"># In pb_hooks oder via Admin UI:</span>
+    <pre><span class="c"># Via Admin UI:</span>
 Admin → Settings → Backups → Schedule: <span class="s">"täglich 03:00"</span></pre>
     <h3>Manuelles Backup</h3>
-    <p>Das gesamte Datenvolume (<code>/pb/pb_data</code>) enthält die SQLite-Datenbank. Einfach kopieren:</p>
-    <pre>docker cp <span class="k">&lt;container-id&gt;</span>:/pb/pb_data ./backup-$(date +%Y%m%d)</pre>
+    <p>Das gesamte Datenvolume (<code>/pb_data</code>) enthält die SQLite-Datenbank. Einfach kopieren:</p>
+    <pre>docker cp <span class="k">&lt;container-id&gt;</span>:/pb_data ./backup-$(date +%Y%m%d)</pre>
     <h3>App-internes Backup</h3>
-    <p>Die Damen können jederzeit über <strong>Stammdaten → Backup exportieren</strong> eine JSON-Datei herunterladen und lokal aufbewahren.</p>
-  </div>
-
-  <!-- ÜBERSICHT -->
-  <h2><span class="num">6</span> Wichtige URLs und Zugangsdaten</h2>
-  <div class="card">
-    <table>
-      <tr><th>Was</th><th>URL / Wert</th></tr>
-      <tr><td><strong>App für Damen</strong></td><td><code>https://kw.hofreither.at/index.html</code></td></tr>
-      <tr><td><strong>PocketBase Admin</strong></td><td><code>https://kw.hofreither.at/_/</code></td></tr>
-      <tr><td><strong>Coolify Dashboard</strong></td><td><code>https://app.coolify.io</code> (oder selbst gehostet)</td></tr>
-      <tr><td><strong>Hetzner Console</strong></td><td><code>https://console.hetzner.cloud</code></td></tr>
-      <tr><td><strong>PocketBase Collection</strong></td><td><code>kw_state</code> mit Feld <code>data</code> (JSON)</td></tr>
-    </table>
-  </div>
-
-  <div class="warn" style="margin-top:24px">
-    <strong>Hinweis Gleichzeitiger Zugriff:</strong> Wenn beide Damen gleichzeitig Buchungen anlegen und kurz danach speichern, gewinnt die letzte Speicherung. Bei zwei Personen im Alltag ist das kein Problem — für echte Echtzeitsynchronisation könnte man PocketBase-Subscriptions ergänzen.
+    <p>Nutzerinnen können jederzeit über <strong>Stammdaten → Backup exportieren</strong> eine JSON-Datei herunterladen und lokal aufbewahren.</p>
   </div>
 
   <!-- SCHRITT 6: Collections für Buchungsanfragen -->
   <h2><span class="num">6</span> Collections für Online-Buchungsanfragen</h2>
   <div class="card blue">
-    <p>Zwei neue Collections in PocketBase anlegen (<code>kw.hofreither.at/_/</code> → Collections):</p>
+    <p>Zwei weitere Collections in PocketBase anlegen (<code>kw.hofreither.at/_/</code> → Collections):</p>
     <div class="step">
       <div class="dot">1</div>
       <div class="body">
@@ -254,14 +236,14 @@ Admin → Settings → Backups → Schedule: <span class="s">"täglich 03:00"</s
         <table style="margin-top:10px">
           <tr><th>Name</th><th>Typ</th></tr>
           <tr><td><code>name</code></td><td>Text</td></tr>
-          <tr><td><code>email</code></td><td>Text</td></tr>
+          <tr><td><code>email</code></td><td>Email</td></tr>
           <tr><td><code>phone</code></td><td>Text</td></tr>
           <tr><td><code>company</code></td><td>Text</td></tr>
           <tr><td><code>from_date</code></td><td>Text</td></tr>
           <tr><td><code>to_date</code></td><td>Text</td></tr>
           <tr><td><code>purpose</code></td><td>Text</td></tr>
           <tr><td><code>message</code></td><td>Text</td></tr>
-          <tr><td><code>status</code></td><td>Text (Default: <code>pending</code>)</td></tr>
+          <tr><td><code>status</code></td><td>Select (<code>pending</code> / <code>approved</code> / <code>rejected</code>)</td></tr>
           <tr><td><code>rejection_note</code></td><td>Text</td></tr>
         </table>
         <p style="margin-top:10px"><strong>API Rules:</strong></p>
@@ -286,7 +268,7 @@ Create/Update/Delete:    <span class="s">@request.auth.id != ""</span></pre>
   <!-- SCHRITT 7: E-Mail / SMTP -->
   <h2><span class="num">7</span> E-Mail-Benachrichtigungen einrichten</h2>
   <div class="card green">
-    <h3>SMTP-Anbieter: Brevo (empfohlen)</h3>
+    <h3>SMTP-Anbieter: Brevo</h3>
     <p>Brevo ist kostenlos (300 Mails/Tag), braucht keine Server-Installation — nur Zugangsdaten konfigurieren.</p>
     <div class="step">
       <div class="dot">1</div>
@@ -307,8 +289,8 @@ Create/Update/Delete:    <span class="s">@request.auth.id != ""</span></pre>
           <tr><td>SMTP Port</td><td><code>587</code></td></tr>
           <tr><td>Username</td><td>Deine Brevo-E-Mail</td></tr>
           <tr><td>Password</td><td>Brevo SMTP-Passwort</td></tr>
-          <tr><td>Sender Address</td><td><code>buchung@hofreither.at</code></td></tr>
-          <tr><td>Sender Name</td><td><code>Kühlwagen-Verleih Hofreither</code></td></tr>
+          <tr><td>Sender Address</td><td><code>rathaus@st-valentin.at</code></td></tr>
+          <tr><td>Sender Name</td><td><code>Kühlwagen-Verleih St. Valentin</code></td></tr>
         </table>
       </div>
     </div>
@@ -316,24 +298,166 @@ Create/Update/Delete:    <span class="s">@request.auth.id != ""</span></pre>
       <div class="dot">4</div>
       <div class="body">
         <strong>Hook-Datei in den Container kopieren</strong>
-        <pre><span class="c"># Datei pb_hooks/kw_anfragen.pb.js auf Server hochladen:</span>
-docker cp kw_anfragen.pb.js <span class="k">&lt;container-id&gt;</span>:/pb/pb_hooks/kw_anfragen.pb.js
+        <pre><span class="c"># Datei pb_hooks/kw_anfragen.pb.js auf Server hochladen, dann:</span>
+docker exec <span class="k">&lt;container-id&gt;</span> mkdir -p /pb_data/pb_hooks
+docker cp kw_anfragen.pb.js <span class="k">&lt;container-id&gt;</span>:/pb_data/pb_hooks/kw_anfragen.pb.js
 
 <span class="c"># Container neu starten damit Hooks geladen werden:</span>
 docker restart <span class="k">&lt;container-id&gt;</span></pre>
-        <div class="tip">Die Hook-Datei liegt im Projekt unter <code>pb_hooks/kw_anfragen.pb.js</code></div>
+        <div class="tip">Die Hook-Datei liegt im Projekt unter <code>pb_hooks/kw_anfragen.pb.js</code>. Sie versendet drei Arten von Mails: neue Anfrage (an alle Mitarbeiterinnen), Genehmigung/Ablehnung (an Anfragende), Buchungsbestätigung (an Kundschaft, ausgelöst über <code>kw_state</code>).</div>
+        <div class="warn"><strong>Wichtig:</strong> Die Buchungsbestätigung merkt sich per <code>_mailSent</code>-Flag im Buchungsdatensatz, ob schon verschickt wurde, um bei den häufigen Autosaves (alle 300ms) keine Dubletten zu verschicken. Nach jeder Änderung an dieser Logik unbedingt mit einem Testfall ohne echten SMTP-Versand prüfen, dass keine Endlosschleife aus Save-Aufrufen entsteht.</div>
       </div>
     </div>
   </div>
 
-  <!-- SCHRITT 8: Buchungsseite deployen -->
-  <h2><span class="num">8</span> Öffentliche Buchungsseite</h2>
+  <!-- SCHRITT 8: Root-Redirect via Traefik -->
+  <h2><span class="num">8</span> Root-Redirect (/ → /start.html)</h2>
   <div class="card blue">
-    <p>Die Datei <code>Buchungsanfrage-standalone.html</code> (standalone-Version der Buchungsseite) als <code>buchung.html</code> in <code>pb_public</code> ablegen — analog zu Schritt 3.</p>
-    <pre><span class="c"># Auf dem Server:</span>
-docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public/buchung.html</pre>
-    <div class="tip">Dann erreichbar unter <code>https://kw.hofreither.at/buchung.html</code></div>
-    <h3>Auf valentinum.at einbetten (iframe)</h3>
+    <p>Standardmäßig liefert PocketBase unter <code>/</code> direkt die Verwaltungs-App (<code>index.html</code>) aus. Damit Besucher stattdessen zuerst die Startseite mit den zwei Buttons sehen, wird in Coolify eine Traefik-Middleware ergänzt.</p>
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>Router-Namen ermitteln</strong>
+        In Coolify: Projekt <code>kuehlwagen</code> → Environment <code>production</code> → Ressource (Application-ID meist als <code>docker-image-&lt;uuid&gt;</code> benannt) → Tab mit den generierten Labels. Dort den Namen des HTTPS-Routers notieren, z.B.:
+        <pre>traefik.http.routers.https-0-&lt;uuid&gt;.middlewares=gzip</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Middleware ergänzen und Router-Zeile ersetzen</strong> (nicht doppelt anlegen — die alte <code>...middlewares=gzip</code>-Zeile muss ersetzt, nicht ergänzt werden):
+        <pre>traefik.http.middlewares.kw-root-redirect.redirectregex.regex=<span class="s">^https://kw\.hofreither\.at/$</span>
+traefik.http.middlewares.kw-root-redirect.redirectregex.replacement=<span class="s">https://kw.hofreither.at/start.html</span>
+traefik.http.middlewares.kw-root-redirect.redirectregex.permanent=<span class="k">true</span>
+traefik.http.routers.https-0-&lt;uuid&gt;.middlewares=<span class="s">gzip,kw-root-redirect</span></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>Speichern, redeployen, testen</strong>
+        <pre>curl.exe -I https://kw.hofreither.at/
+<span class="c"># Erwartet: 308 Permanent Redirect → Location: https://kw.hofreither.at/start.html</span>
+<span class="c"># Andere Pfade (/index.html, /buchung.html) bleiben unberührt, da der Regex mit $ nur die exakte Root-URL matcht.</span></pre>
+      </div>
+    </div>
+    <div class="tip">Der <code>^...$</code>-Anker im Regex ist entscheidend — ohne ihn würde die Middleware auch <code>/index.html</code> & Co. treffen und die App unerreichbar machen.</div>
+  </div>
+
+  <!-- SCHRITT 9: Git-Workflow -->
+  <h2><span class="num">9</span> Git-Workflow &amp; Deploy</h2>
+  <div class="card green">
+    <p>Arbeitsordner: <code>C:\Projekte\kuehlwagen</code> · Repo: <code>https://github.com/herrwurz/kuehlwagen</code> · Branch: <code>main</code> (es gibt aktuell keinen separaten <code>dev</code>-Branch mehr im laufenden Workflow — Änderungen gehen direkt auf <code>main</code>).</p>
+
+    <h3>Änderung committen</h3>
+    <pre>git add &lt;datei&gt;
+git commit -m <span class="s">"Beschreibung der Änderung"</span>
+git push origin main</pre>
+
+    <h3>Frontend-Änderung deployen</h3>
+    <pre><span class="c"># 1. Standalone-HTML(s) hochladen:</span>
+scp "Kühlwagen-Verwaltung-standalone.html" root@116.203.141.156:/root/index.html
+scp "Buchungsanfrage-standalone.html"      root@116.203.141.156:/root/buchung.html
+scp "Startseite-standalone.html"           root@116.203.141.156:/root/start.html
+
+<span class="c"># 2. Container-ID finden + Dateien kopieren (SSH):</span>
+CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
+docker cp /root/index.html   $CONTAINER:/pb_public/index.html
+docker cp /root/buchung.html $CONTAINER:/pb_public/buchung.html
+docker cp /root/start.html   $CONTAINER:/pb_public/start.html</pre>
+
+    <h3>Hook-Änderung (pb_hooks/kw_anfragen.pb.js) deployen</h3>
+    <pre>scp "pb_hooks\kw_anfragen.pb.js" root@116.203.141.156:/root/kw_anfragen.pb.js
+
+<span class="c"># dann via SSH:</span>
+CONTAINER=$(docker ps --format '{{.ID}} {{.Image}}' | grep pocketbase | awk '{print $1}' | head -1)
+docker exec $CONTAINER mkdir -p /pb_data/pb_hooks
+docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_data/pb_hooks/kw_anfragen.pb.js
+docker restart $CONTAINER   <span class="c"># nötig, damit der Hook geladen wird</span></pre>
+
+    <div class="warn">
+      <strong>PowerShell-Quoting-Falle:</strong> In einem <code>ssh ... "..."</code>-Aufruf aus PowerShell muss <code>$</code> mit Backtick escaped werden (<code>`$CONTAINER</code>), nicht mit Backslash (<code>\$CONTAINER</code>) — PowerShell kennt keine Backslash-Escapes und würde den Befehl sonst kaputt interpolieren, bevor er überhaupt bei SSH ankommt.
+    </div>
+
+    <h3>Troubleshooting: SSH "Permission denied"</h3>
+    <p>Falls SSH trotz korrektem Passwort scheitert, kann <strong>fail2ban</strong> die eigene IP nach ein paar Fehlversuchen gesperrt haben. Nur über die Hetzner VNC Console behebbar:</p>
+    <pre>fail2ban-client status sshd        <span class="c"># gesperrte IPs anzeigen</span>
+fail2ban-client set sshd unbanip <span class="k">&lt;IP&gt;</span></pre>
+
+    <h3>GitHub Repo</h3>
+    <pre>https://github.com/herrwurz/kuehlwagen
+Branch: main</pre>
+  </div>
+
+  <!-- SCHRITT 10: Lokale Entwicklungsumgebung -->
+  <h2><span class="num">10</span> Lokale Entwicklungsumgebung</h2>
+  <div class="card blue">
+    <p>Läuft komplett unabhängig vom Produktivserver, direkt im Projektordner. <code>pocketbase.exe</code>, <code>pb_data/</code> und <code>pb_public/</code> sind gitignored (nur lokal, nicht versioniert).</p>
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="body">
+        <strong>pocketbase.exe besorgen</strong>
+        Von <code>pocketbase.io/docs</code> herunterladen, ins Projektverzeichnis legen.
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="body">
+        <strong>Server starten</strong>
+        <pre>./pocketbase.exe serve --http=127.0.0.1:8090</pre>
+        Kein Autostart eingerichtet — nach jedem Neustart manuell erneut ausführen.
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="body">
+        <strong>Superuser + Collections einrichten</strong>
+        Analog zu Schritt 2 und 6, aber lokal: <code>http://127.0.0.1:8090/_/</code> aufrufen, Superuser anlegen, <code>kw_state</code>/<code>kw_calendar</code>/<code>kw_booking_requests</code> anlegen (PocketBase erzeugt dabei automatisch Migrationsdateien in <code>pb_migrations/</code> — die sind versioniert und sollten committet werden).
+      </div>
+    </div>
+    <div class="step">
+      <div class="dot">4</div>
+      <div class="body">
+        <strong>Frontend-Dateien nach <code>pb_public/</code> kopieren</strong>
+        <pre>cp "Kühlwagen-Verwaltung-standalone.html" pb_public/index.html
+cp "Buchungsanfrage-standalone.html"      pb_public/buchung.html
+cp "Startseite-standalone.html"           pb_public/start.html</pre>
+        Die App erkennt die PocketBase-URL automatisch über <code>window.location.origin</code> — kein manuelles Umschalten von <code>PB_URL</code> nötig, solange sie aus demselben <code>pb_public</code>-Ordner ausgeliefert wird.
+      </div>
+    </div>
+    <div class="tip">
+      <strong>URLs lokal:</strong> Startseite <code>http://127.0.0.1:8090/start.html</code> · Verwaltung <code>http://127.0.0.1:8090/index.html</code> · Buchung <code>http://127.0.0.1:8090/buchung.html</code> · Admin <code>http://127.0.0.1:8090/_/</code>
+    </div>
+    <div class="warn">
+      <strong>SMTP nicht konfiguriert:</strong> Die E-Mail-Hooks laufen lokal, aber ohne SMTP-Konfiguration in der lokalen PB-Admin-UI wird keine echte Mail verschickt (Fehler <code>failed to locate a sendmail executable path</code> im Log — das ist erwartetes Verhalten, kein Bug).
+    </div>
+    <div class="tip">
+      <strong>Windows-Besonderheit:</strong> <code>--hooksWatch</code> (Auto-Reload bei Hook-Änderungen) hat auf Windows keine Wirkung — nach jeder Änderung an <code>pb_hooks/kw_anfragen.pb.js</code> muss der lokale Server manuell neu gestartet werden.
+    </div>
+  </div>
+
+  <div class="warn" style="margin-top:24px">
+    <strong>Hinweis Gleichzeitiger Zugriff:</strong> Wenn mehrere Mitarbeiterinnen gleichzeitig Buchungen anlegen und kurz danach speichern, gewinnt die letzte Speicherung. Im Alltag mit wenigen Personen ist das kein Problem — für echte Echtzeitsynchronisation könnte man PocketBase-Subscriptions ergänzen.
+  </div>
+
+  <!-- ÜBERSICHT -->
+  <h2><span class="num">11</span> Wichtige URLs und Zugangsdaten</h2>
+  <div class="card">
+    <table>
+      <tr><th>Was</th><th>URL / Wert</th></tr>
+      <tr><td><strong>Startseite</strong></td><td><code>https://kw.hofreither.at/start.html</code> (auch unter <code>/</code>)</td></tr>
+      <tr><td><strong>Verwaltung</strong></td><td><code>https://kw.hofreither.at/index.html</code></td></tr>
+      <tr><td><strong>Buchungsseite (öffentlich)</strong></td><td><code>https://kw.hofreither.at/buchung.html</code></td></tr>
+      <tr><td><strong>PocketBase Admin</strong></td><td><code>https://kw.hofreither.at/_/</code></td></tr>
+      <tr><td><strong>Coolify Dashboard</strong></td><td>selbst gehostet, Projekt <code>kuehlwagen</code></td></tr>
+      <tr><td><strong>Hetzner Console</strong></td><td><code>https://console.hetzner.cloud</code></td></tr>
+      <tr><td><strong>SMTP (Brevo)</strong></td><td><code>smtp-relay.brevo.com:587</code></td></tr>
+      <tr><td><strong>GitHub Repo</strong></td><td><code>https://github.com/herrwurz/kuehlwagen</code></td></tr>
+    </table>
+  </div>
+
+  <h3>Auf valentinum.at einbetten (iframe)</h3>
+  <div class="card">
     <pre>&lt;iframe
   src="https://kw.hofreither.at/buchung.html"
   width="100%"
@@ -343,77 +467,7 @@ docker cp buchung.html <span class="k">&lt;container-id&gt;</span>:/pb/pb_public
 &lt;/iframe&gt;</pre>
   </div>
 
-  <!-- WICHTIGE URLs UPDATE -->
-  <h2><span class="num">9</span> Wichtige URLs und Zugangsdaten</h2>
-  <div class="card">
-    <table>
-      <tr><th>Was</th><th>URL / Wert</th></tr>
-      <tr><td><strong>App für Mitarbeiter</strong></td><td><code>https://kw.hofreither.at/index.html</code></td></tr>
-      <tr><td><strong>Buchungsseite (öffentlich)</strong></td><td><code>https://kw.hofreither.at/buchung.html</code></td></tr>
-      <tr><td><strong>PocketBase Admin</strong></td><td><code>https://kw.hofreither.at/_/</code></td></tr>
-      <tr><td><strong>Coolify Dashboard</strong></td><td><code>https://app.coolify.io</code></td></tr>
-      <tr><td><strong>Hetzner Console</strong></td><td><code>https://console.hetzner.cloud</code></td></tr>
-      <tr><td><strong>SMTP (Brevo)</strong></td><td><code>smtp-relay.brevo.com:587</code></td></tr>
-    </table>
-  </div>
-
-  <!-- SCHRITT 10: Git-Workflow -->
-  <h2><span class="num">10</span> Git-Workflow &amp; Deploy</h2>
-  <div class="card green">
-    <h3>Repo-Struktur</h3>
-    <table>
-      <tr><th>Branch</th><th>Zweck</th></tr>
-      <tr><td><code>main</code></td><td>Produktivversion — was auf dem Server läuft</td></tr>
-      <tr><td><code>dev</code></td><td>Entwicklung — hier werden Änderungen gemacht</td></tr>
-    </table>
-
-    <h3>Änderung entwickeln (Standard-Workflow)</h3>
-    <pre><span class="c"># 1. Auf dev-Branch wechseln</span>
-git checkout dev
-
-<span class="c"># 2. Änderungen in Claude.ai machen
-#    → Standalone HTMLs exportieren
-#    → Dateien in lokalen kuehlwagen-Ordner legen</span>
-
-<span class="c"># 3. Ins Git committen</span>
-git add .
-git commit -m <span class="s">"Beschreibung der Änderung"</span>
-git push</pre>
-
-    <h3>Auf Produktion deployen</h3>
-    <pre><span class="c"># Deploy-Script ausführen (macht alles automatisch):</span>
-.\deploy.ps1
-
-<span class="c"># Das Script macht:</span>
-<span class="c"># 1. dev → main mergen und pushen</span>
-<span class="c"># 2. Standalone HTMLs per SCP auf Server</span>
-<span class="c"># 3. Dateien in PocketBase Container kopieren</span></pre>
-
-    <h3>Voraussetzungen für deploy.ps1</h3>
-    <ul style="margin:10px 0;padding-left:20px;line-height:2">
-      <li>SSH-Zugang funktioniert: <code>ssh root@116.203.141.156</code></li>
-      <li>Standalone HTMLs liegen im Ordner:<br>
-        <code>Kuehlwagen-Verwaltung-standalone.html</code><br>
-        <code>Buchungsanfrage-standalone.html</code>
-      </li>
-      <li>Script liegt im Repo-Root: <code>deploy.ps1</code></li>
-    </ul>
-
-    <h3>Standalone HTMLs generieren</h3>
-    <p>In Claude.ai (<code>claude.ai</code>) → Projekt "Kühlwagen-Verwaltungssystem":</p>
-    <ol style="margin:10px 0;padding-left:20px;line-height:2">
-      <li>Änderungen besprechen und umsetzen lassen</li>
-      <li>"Als Standalone exportieren" → Datei herunterladen</li>
-      <li>In lokalen Repo-Ordner legen</li>
-      <li><code>.\deploy.ps1</code> ausführen</li>
-    </ol>
-
-    <h3>GitHub Repo</h3>
-    <pre>https://github.com/herrwurz/kuehlwagen
-Branches: main (Prod), dev (Entwicklung)</pre>
-  </div>
-
-  <p style="margin-top:32px;font-size:12.5px;color:#9aa6b2;text-align:center">Hofreither · Kühlwagen-Verleih · Deployment-Anleitung v3.0</p>
+  <p style="margin-top:32px;font-size:12.5px;color:#9aa6b2;text-align:center">Stadtgemeinde St. Valentin · Kühlwagen-Verleih · Deployment-Anleitung v4.0 · Stand 26.07.2026</p>
 </div>
 </body>
 </html>

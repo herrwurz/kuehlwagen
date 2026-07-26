@@ -114,10 +114,10 @@ git checkout dev
 10. **Git-Workflow** — GitHub Repo, dev/prod Branches, deploy.ps1
 11. **pbRecordId Race Condition** — BEHOBEN (sessionStorage Backup, 300ms Debounce, beforeunload)
 12. **Lokale PocketBase-Entwicklungsumgebung** — FERTIG (siehe Abschnitt unten)
+13. **Root-Redirect** / → /start.html — FERTIG via Traefik-Middleware `kw-root-redirect` (Custom Labels in Coolify, Ressource `docker-image-v9j9ncs0jejdvkjiz8fuzqgw`, Router `https-0-v9j9ncs0jejdvkjiz8fuzqgw`)
 
 ### Offene Aufgaben
-1. **Root-Redirect** / → /start.html — Traefik-Middleware nötig, vorerst als Lesezeichen belassen
-2. **Setup-Guide** für Git/Deploy erstellen
+1. **Setup-Guide** für Git/Deploy erstellen
 
 ## Lokale Entwicklungsumgebung
 
