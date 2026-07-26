@@ -108,6 +108,7 @@ docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb_hooks/kw_anfragen.pb.js 2>/dev/
 docker cp /root/kw_anfragen.pb.js $CONTAINER:/pb/pb_hooks/kw_anfragen.pb.js 2>/dev/null || true
 echo "DONE"
 '@
+$containerCmd = $containerCmd -replace "`r`n", "`n"
 
 $result = ssh "${User}@${Server}" $containerCmd
 if ($LASTEXITCODE -ne 0 -or $result -match "FEHLER") { Write-Fail "Container-Copy fehlgeschlagen: $result" }
