@@ -1,5 +1,75 @@
 # Kühlwagen-Verwaltungssystem — Projektnotizen
 
+## Arbeitsweise / Workflow (Stand 02.07.2026)
+
+**Zwei gleichwertige Wege — beide enden bei deploy.bat:**
+
+**Weg 1: Code-Fixes (VS Code)**
+1. `.dc.html` in VS Code (`Downloads\kuehlwagen\`) bearbeiten
+2. `deploy.bat` ausführen → DC-Dateien + `support.js` direkt auf Server
+
+**Weg 2: UI-Änderungen (Claude)**
+1. `.dc.html` in Claude Design Editor bearbeiten
+2. Geänderte DC-Datei herunterladen → in `kuehlwagen`-Ordner legen
+3. `deploy.bat` ausführen
+
+**Kein Standalone-Export mehr nötig!** `deploy.ps1` deployed die DC-Dateien direkt zusammen mit `support.js`.
+
+**Wichtig:** `support.js` muss im `kuehlwagen`-Ordner liegen und bei Claude-Updates synchronisiert werden.
+
+**Datei-Upload zu Claude:** Geänderte DC-Datei per Drag & Drop in den Chat ziehen → Claude übernimmt sie und kann weiter bearbeiten.
+
+---
+
+## Bekannte Fixes & Entscheidungen (Stand 02.07.2026)
+
+### Deploy-Script (deploy.ps1)
+- Sucht DC-Dateien im Repo-Ordner per Glob (umgeht Umlaut-Encoding-Probleme)
+- Deployed auch `support.js` (zwingend erforderlich für DC-Dateien)
+- Logo (`uploads/logo-weiss-transparent-1000.gif`) wird automatisch deployed → landet in `/pb_public/uploads/`
+- **SSH-Key einrichten:** `setup-ssh-key.ps1` einmalig ausführen → kein Passwort mehr bei deploy.bat
+- `support.js` Pfad: `/support.js` (absolut) — nicht `./support.js` (führt zu falschem Pfad bei index.html)
+- **Zwei Deploy-Varianten:**
+  - `deploy.bat` — normaler Deploy (HTML-Änderungen), KEIN Container-Restart
+  - `deploy-hooks.bat` — Deploy MIT Hook-Update + Container-Neustart (`deploy.ps1 -Hooks`). Nur nötig wenn `pb_hooks/kw_anfragen.pb.js` geändert wurde
+
+### Kalender-Sync & Doppelanfragen (Stand 02.07.2026) — GELÖST
+- **kw_calendar Format:** `[{from, to, type:'booked'|'requested'}]` — booked = Buchungen, requested = pending Anfragen
+- **Serverseitiger Hook LÄUFT JETZT** (`kw_anfragen.pb.js`): spiegelt pending-Anfragen sofort nach kw_calendar, unabhängig von der Admin-App. Login-Lücke geschlossen.
+- **Client-Pfad zusätzlich aktiv:** `loadAnfragen()` → `syncCalendar()` (booked + requested), bei Login + alle 2 Min
+- **buchung.html:** liest kw_calendar (`sort=-updated`), zeigt `angefragt` orange, Auswahl blockiert; Datumsfelder ROT bei Konflikt; Submit blockiert bei Überlappung; Doppel-Submit-Guard; Reload nach Submit
+- Alter kw_calendar-Eintrag ohne `type` → als `booked` behandelt (`r.type||'booked'`)
+
+### ⚠️ ZWEI ENTSCHEIDENDE HOOK-FALLSTRICKE (waren die Ursache)
+1. **Hooks-Pfad:** PocketBase läuft mit `hooksDir=pb_hooks` (RELATIV → CWD-relativ = `/pb/pb_hooks`, NICHT `/pb_data/pb_hooks`!). Es gibt drei Kandidaten: `/pb_hooks`, `/pb/pb_hooks`, `/pb_data/pb_hooks`. `deploy.ps1` kopiert jetzt in ALLE DREI. Aktiv ist `/pb/pb_hooks`.
+2. **Isolierter Scope:** PocketBase-Hook-Callbacks können KEINE top-level Funktionen/Variablen aufrufen → `ReferenceError: xxx is not defined`. Alle Logik MUSS inline im Callback stehen, nur globale `$app.*` / `new Record()` sind verfügbar. Die Kalender-Rebuild-Logik ist daher inline in beide Hooks dupliziert.
+- **PocketBase Version:** v0.39.5 → `$app.save(record)`, `$app.findAllRecords()`, `$app.findRecordsByFilter()`, `$app.findCollectionByNameOrId()`, `new Record(coll)` sind korrekt
+- **Diagnose-Trick wenn Hook-Logs unsichtbar:** `console.log`/`$app.logger()` erscheinen NICHT in Admin-Logs oder docker logs. Stattdessen Diagnose in E-Mail-Betreff schreiben (Mail-Kanal funktioniert zuverlässig)
+
+### Konfliktcheck (Doppelbuchungen)
+- `submitBooking` (manuelle Buchung): prüft gegen bestehende Buchungen mit `parseD()` (nicht String-Vergleich!)
+- `approveAnfrage` (Online-Anfrage genehmigen): prüft ebenfalls mit `parseD()`
+- String-Vergleich war fehlerhaft bei Datumsformaten ohne führende Null
+
+### Tagessatz
+- Default ist `??0` (nicht `||85`) — `||` würde bei Tagessatz=0 auf 85 fallen
+
+### Logo / uploads
+- Logo liegt in `kuehlwagen/uploads/logo-weiss-transparent-1000.gif`
+- Server-Pfad: `/pb_public/uploads/logo-weiss-transparent-1000.gif`
+- Unnötige Dateien am Server löschen: `docker exec $CONTAINER sh -c 'rm -f /pb_public/uploads/pasted-*'`
+
+### PocketBase Reset
+- `resetAllData()` löscht Bookings/Calendar/Anfragen in PocketBase + localStorage/sessionStorage
+- `kw_state` Record bleibt erhalten (Inhalt wird geleert) — ist so gewollt
+- `kw_calendar` Record bleibt erhalten (data leer) — ist ok
+
+### Login
+- `localStorage.removeItem('pocketbase_auth')` vor `new PocketBase()` → kein Auto-Login
+- `this.pb` nach Logout NICHT auf null setzen — nur `authStore.clear()`
+
+---
+
 ## Deployment-Status (Stand 26.07.2026)
 
 ### App-URLs

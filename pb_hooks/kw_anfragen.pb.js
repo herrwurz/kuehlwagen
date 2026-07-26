@@ -1,11 +1,58 @@
 // PocketBase JS Hooks — Kühlwagen Buchungsanfragen & Buchungsbestätigungen
-// Datei kopieren nach: /pb_data/pb_hooks/kw_anfragen.pb.js
-// Dann Container neu starten: docker restart <container-id>
+// Aktiver Hooks-Pfad: CWD-relativ "pb_hooks" → bei diesem Image /pb/pb_hooks
+// deploy.ps1 kopiert in alle drei Kandidaten-Pfade.
+// WICHTIG: PocketBase-Hook-Callbacks laufen in isoliertem Scope — sie sehen
+// KEINE top-level Funktionen/Variablen. Deshalb ist die Kalender-Logik in
+// jeden Hook INLINE geschrieben und nutzt nur globale $app.* / Record APIs.
 //
 // Voraussetzung: SMTP in PocketBase Admin → Settings → Mail konfigurieren
 
-// ─── Neue Anfrage → Mail an alle Benutzer ───────────────────────────────────
+// ─── Neue Anfrage → Kalender spiegeln + Mail an alle Benutzer ────────────────
 onRecordAfterCreateSuccess((e) => {
+  // ── Kalender-Rebuild (INLINE) ──────────────────────────────────────────────
+  try {
+    let allReqs = [];
+    try { allReqs = $app.findAllRecords("kw_booking_requests"); } catch (ee) { allReqs = []; }
+    const seen = {};
+    const requested = [];
+    for (let i = 0; i < allReqs.length; i++) {
+      const rr = allReqs[i];
+      if (rr.getString("status") !== "pending") continue;
+      const f = rr.getString("from_date"), t = rr.getString("to_date");
+      if (!f || !t) continue;
+      const key = f + "_" + t;
+      if (seen[key]) continue;                 // Dedup → idempotent
+      seen[key] = true;
+      requested.push({ from: f, to: t, type: "requested" });
+    }
+    let calRec = null;
+    try {
+      const cals = $app.findRecordsByFilter("kw_calendar", "id != ''", "-updated", 1, 0);
+      calRec = (cals && cals.length > 0) ? cals[0] : null;
+    } catch (ee) {
+      try { const all = $app.findAllRecords("kw_calendar"); calRec = (all && all.length > 0) ? all[0] : null; } catch (e2) { calRec = null; }
+    }
+    const booked = [];
+    if (calRec) {
+      let raw = calRec.get("data");
+      if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch (ee) { raw = []; } }
+      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && (it.type || "booked") === "booked") booked.push(it); } }
+    }
+    const merged = booked.concat(requested);
+    if (calRec) {
+      calRec.set("data", merged);
+      $app.save(calRec);
+    } else {
+      const coll = $app.findCollectionByNameOrId("kw_calendar");
+      const newRec = new Record(coll);
+      newRec.set("data", merged);
+      $app.save(newRec);
+    }
+  } catch (err) {
+    try { $app.logger().error("kw_calendar rebuild (create): " + String(err)); } catch (ignore) {}
+  }
+
+  // ── Benachrichtigungsmail an alle Benutzer ─────────────────────────────────
   const r = e.record;
   const name     = r.getString("name");
   const email    = r.getString("email");
@@ -58,9 +105,54 @@ onRecordAfterCreateSuccess((e) => {
 }, "kw_booking_requests");
 
 
-// ─── Status-Änderung Anfrage → Mail an Anfragenden ───────────────────────────
+// ─── Status-Änderung Anfrage → Kalender spiegeln + Mail an Anfragenden ────────
 onRecordAfterUpdateSuccess((e) => {
-  const r      = e.record;
+  const r = e.record;
+
+  // ── Kalender-Rebuild (INLINE) — IMMER, auch bei pending-Datumsänderung ──────
+  try {
+    let allReqs = [];
+    try { allReqs = $app.findAllRecords("kw_booking_requests"); } catch (ee) { allReqs = []; }
+    const seen = {};
+    const requested = [];
+    for (let i = 0; i < allReqs.length; i++) {
+      const rr = allReqs[i];
+      if (rr.getString("status") !== "pending") continue;
+      const f = rr.getString("from_date"), t = rr.getString("to_date");
+      if (!f || !t) continue;
+      const key = f + "_" + t;
+      if (seen[key]) continue;
+      seen[key] = true;
+      requested.push({ from: f, to: t, type: "requested" });
+    }
+    let calRec = null;
+    try {
+      const cals = $app.findRecordsByFilter("kw_calendar", "id != ''", "-updated", 1, 0);
+      calRec = (cals && cals.length > 0) ? cals[0] : null;
+    } catch (ee) {
+      try { const all = $app.findAllRecords("kw_calendar"); calRec = (all && all.length > 0) ? all[0] : null; } catch (e2) { calRec = null; }
+    }
+    const booked = [];
+    if (calRec) {
+      let raw = calRec.get("data");
+      if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch (ee) { raw = []; } }
+      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && (it.type || "booked") === "booked") booked.push(it); } }
+    }
+    const merged = booked.concat(requested);
+    if (calRec) {
+      calRec.set("data", merged);
+      $app.save(calRec);
+    } else {
+      const coll = $app.findCollectionByNameOrId("kw_calendar");
+      const newRec = new Record(coll);
+      newRec.set("data", merged);
+      $app.save(newRec);
+    }
+  } catch (err) {
+    try { $app.logger().error("kw_calendar rebuild (update): " + String(err)); } catch (ignore) {}
+  }
+
+  // ── Status-Mail nur bei approved/rejected ──────────────────────────────────
   const status = r.getString("status");
   if (status !== "approved" && status !== "rejected") return;
 
@@ -142,8 +234,6 @@ onRecordAfterUpdateSuccess((e) => {
 
 // ─── Buchung bestätigt → Bestätigungsmail an Kunden ─────────────────────────
 // Wird ausgelöst wenn in der Verwaltungs-App der Status auf "bestätigt" gesetzt wird
-// Die Buchungsdaten werden im kw_state JSON gespeichert — dieser Hook liest
-// den neuen State und sendet Mails für neue "bestätigt"-Buchungen
 onRecordAfterUpdateSuccess((e) => {
   const r = e.record;
   // Nur kw_state Records verarbeiten
@@ -159,7 +249,8 @@ onRecordAfterUpdateSuccess((e) => {
   );
   if (confirmed.length === 0) return;
 
-  let anySent = false;
+  let sentCount = 0;
+
   for (const b of confirmed) {
     const htmlMail = `
       <div style="font-family:sans-serif;max-width:580px;margin:0 auto;background:#f4f7fb;padding:20px">
@@ -204,25 +295,19 @@ onRecordAfterUpdateSuccess((e) => {
         subject: "Buchungsbestätigung " + (b.id || '') + " – Kühlwagen-Verleih St. Valentin",
         html: htmlMail
       }));
-      b._mailSent = true;
-      anySent = true;
+      b._mailSent = true;   // Regression-Schutz: nicht erneut senden
+      sentCount++;
       console.log("kw_buchung: Bestätigungsmail gesendet an", b.email);
     } catch (err) {
       console.error("kw_buchung: Fehler beim Mail-Versand:", err);
     }
   }
 
-  // _mailSent zurückschreiben, damit bei den häufigen Autosaves (alle 300ms)
-  // keine Dubletten verschickt werden. Löst denselben Hook erneut aus, aber
-  // dann ist confirmed.length === 0 (bzw. unverändert falls kein Versand
-  // erfolgreich war) und er kehrt oben sofort zurück bzw. speichert nicht
-  // erneut — sonst würde ein dauerhafter SMTP-Fehler eine Endlosschleife
-  // aus Save-Aufrufen auslösen.
-  if (!anySent) return;
-  try {
-    r.set("data", data);
-    $app.save(r);
-  } catch (err) {
-    console.error("kw_buchung: Fehler beim Speichern von _mailSent:", err);
+  // _mailSent zurück in kw_state persistieren, aber nur wenn tatsächlich
+  // etwas verschickt wurde — sonst würde ein dauerhafter SMTP-Fehler eine
+  // Endlosschleife aus Save-Aufrufen auslösen (jeder Save löst denselben
+  // Hook erneut aus).
+  if (sentCount > 0) {
+    try { r.set("data", data); $app.save(r); } catch (err) { console.error("kw_buchung: _mailSent persist Fehler:", err); }
   }
 }, "kw_state");
