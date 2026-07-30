@@ -106,6 +106,7 @@ docker cp /root/index.html   $CONTAINER:/pb_public/index.html
 docker cp /root/buchung.html $CONTAINER:/pb_public/buchung.html
 docker cp /root/start.html   $CONTAINER:/pb_public/start.html
 docker cp /root/support.js   $CONTAINER:/pb_public/support.js
+docker exec $CONTAINER mkdir -p /pb_public/uploads
 docker cp /root/logo-weiss-transparent-1000.gif $CONTAINER:/pb_public/uploads/logo-weiss-transparent-1000.gif 2>/dev/null || true
 docker cp /root/stvalentin-logo-blau.png $CONTAINER:/pb_public/uploads/stvalentin-logo-blau.png 2>/dev/null || true
 # Hook in ALLE moeglichen hooksDir-Pfade kopieren (aktiv ist der CWD-relative, meist /pb/pb_hooks)

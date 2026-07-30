@@ -7,6 +7,20 @@
 //
 // Voraussetzung: SMTP in PocketBase Admin → Settings → Mail konfigurieren
 
+// ─── Create: Status immer "pending" für unauthentifizierte Requests ──────────
+// createRule "@request.data.status = \"pending\"" bricht in PB 0.39.x ALLE
+// Creates (auch korrekte pending). Daher serverseitig erzwingen.
+onRecordCreateRequest((e) => {
+  try {
+    if (!e.auth || !e.auth.id) {
+      e.record.set("status", "pending")
+    }
+  } catch (err) {
+    try { e.record.set("status", "pending") } catch (ignore) {}
+  }
+  e.next()
+}, "kw_booking_requests")
+
 // ─── Neue Anfrage → Kalender spiegeln + Mail an alle Benutzer ────────────────
 onRecordAfterCreateSuccess((e) => {
   // ── Kalender-Rebuild (INLINE) ──────────────────────────────────────────────

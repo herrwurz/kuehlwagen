@@ -263,13 +263,12 @@ git checkout dev
 27. **Buchungsnummern-Schema geändert** — von `B-XXXX` auf `JAHR+4-stellig` (z.B. `20260001`), konfigurierbare Start-Nummer in Stammdaten
 28. **approveAnfrage abgesichert (30.07.2026)** — Konfliktcheck mit `parseD()`; Buchung erst nach erfolgreichem PB-Update; Fehler-Toast statt stiller Doppelbuchung
 29. **Kalender Delete-Hook** — `onRecordAfterDeleteSuccess` baut `kw_calendar` neu auf (keine verwaisten `requested`)
-30. **createRule `status=pending`** — öffentliche Creates dürfen keinen anderen Status setzen (Migration `1785400000_…`); Secrets aus CLAUDE.md entfernt
+30. **Status-Zwang bei öffentlichen Creates (30.07.2026)** — Hook `onRecordCreateRequest` setzt unauth Creates immer auf `pending` (createRule-Vergleich bricht in PB 0.39 alle Creates); Secrets aus CLAUDE.md entfernt; Delete-Hook + approveAnfrage-Absicherung
 
 ### Offene Aufgaben
 1. **Setup-Guide** für Git/Deploy erstellen
 2. **`uploads/mietbedingungen.pdf` fehlt** — die neue Mietbedingungen-Checkbox verlinkt auf eine Datei, die es noch nicht gibt → 404 beim Klick. PDF erstellen/hochladen und in `uploads/` (lokal + Server) ablegen, dann mit deployen
 3. **Server-Root-Passwort rotieren** — lag zeitweise klartext in CLAUDE.md / GitHub; SSH-Key nutzen, Klartext-Passwort ändern
-4. **createRule in Produktion prüfen** — falls Migration auf Coolify nicht auto-läuft: PB-Admin → `kw_booking_requests` → Create Rule = `@request.data.status = "pending"`
 
 ## Lokale Entwicklungsumgebung
 
