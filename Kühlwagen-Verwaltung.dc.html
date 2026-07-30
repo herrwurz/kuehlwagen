@@ -1817,14 +1817,32 @@ class Component extends DCLogic {
     const a=this.state.anfragen.find(x=>x.id===id);
     if(!a||a.status==='approved'||a.status==='rejected')return;
     if(this._approvingId===id)return;
-    this._approvingId=id;
+    if(!this.pb){this.toast('Keine Verbindung zu PocketBase','warn');return;}
     const fromDate=a.from_date,toDate=a.to_date;
-    const dd=Math.round((this.parseD(toDate)-this.parseD(fromDate))/86400000)+1;
+    if(!fromDate||!toDate){this.toast('Anfrage ohne gültigen Zeitraum','warn');return;}
+    if(this.parseD(toDate)<this.parseD(fromDate)){this.toast('Enddatum vor Startdatum','warn');return;}
+    const dvD=this.parseD(fromDate),dbD=this.parseD(toDate);
+    const conflict=this.state.bookings.filter(b=>b.status!=='storniert').find(b=>dvD<=this.parseD(b.bis)&&dbD>=this.parseD(b.von));
+    if(conflict){this.toast('Zeitraum überschneidet Buchung '+conflict.id+' ('+conflict.kunde+')','warn');return;}
+    const anfConflict=this.state.anfragen.filter(x=>x.status==='pending'&&x.id!==id).find(x=>dvD<=this.parseD(x.to_date)&&dbD>=this.parseD(x.from_date));
+    if(anfConflict){if(!window.confirm('Achtung: Es gibt eine weitere offene Anfrage von '+anfConflict.name+' für diesen Zeitraum. Trotzdem genehmigen?'))return;}
+    this._approvingId=id;
+    const dd=Math.round((dbD-dvD)/86400000)+1;
     const veh=this.getVehicles()[0];
     const nb={id:this.nextBookingId(),kunde:a.name+(a.company?' ('+a.company+')':''),telefon:a.phone||'',email:a.email||'',von:fromDate,bis:toDate,grund:a.purpose||a.message||'Online-Anfrage',preis:dd*(veh?.tagessatz??0),kaution:veh?.kaution??0,notiz:'Online-Anfrage',status:'bestätigt',_mailSent:true,kmRaus:null,kmRein:null,rechnung:null,color:'#3b82d6',vehicleId:veh?.id||'v1'};
-    this.setState({bookings:[...this.state.bookings,nb]});
-    this.pb.collection('kw_booking_requests').update(id,{status:'approved'}).then(()=>{this._approvingId=null;this.loadAnfragen();this.syncCalendar();}).catch(()=>{this._approvingId=null;});
-    this.toast('Anfrage genehmigt – Buchung '+nb.id+' angelegt','ok');
+    this.pb.collection('kw_booking_requests').update(id,{status:'approved'})
+      .then(()=>{
+        if(!this.pb){this._approvingId=null;return;}
+        this.setState({bookings:[...this.state.bookings,nb]});
+        this._approvingId=null;
+        this.loadAnfragen();
+        this.syncCalendar();
+        this.toast('Anfrage genehmigt – Buchung '+nb.id+' angelegt','ok');
+      })
+      .catch(()=>{
+        this._approvingId=null;
+        this.toast('Genehmigung fehlgeschlagen – keine Buchung angelegt','warn');
+      });
   }
   openReject(id){this.setState({rejectId:id,rejectNote:''});}
   closeReject(){this.setState({rejectId:null,rejectNote:''}); }

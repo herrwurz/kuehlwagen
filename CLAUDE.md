@@ -48,7 +48,7 @@
 
 ### Konfliktcheck (Doppelbuchungen)
 - `submitBooking` (manuelle Buchung): prüft gegen bestehende Buchungen mit `parseD()` (nicht String-Vergleich!)
-- `approveAnfrage` (Online-Anfrage genehmigen): prüft ebenfalls mit `parseD()`
+- `approveAnfrage` (Online-Anfrage genehmigen): prüft ebenfalls mit `parseD()` gegen Buchungen + pending-Anfragen; Buchung wird erst nach erfolgreichem PB-`update` angelegt (kein optimistisches setState vor dem Request)
 - String-Vergleich war fehlerhaft bei Datumsformaten ohne führende Null
 
 ### Tagessatz
@@ -76,7 +76,7 @@
 - `calRec.get("data")` lieferte bestehende `kw_calendar`-Daten teils als rohes Byte-Array statt als String/Array
 - Der Rebuild-Hook interpretierte dadurch einzelne Bytes fälschlich als `"booked"`-Einträge (jede Zahl bestand den Filter `it.type || "booked" === "booked"`) — bestehende Kalenderdaten wurden mit Datenmüll überschrieben
 - Fix: Byte-Array wird vor der Verarbeitung zu String rekonstruiert und geparst; zusätzlicher `typeof it === "object"`-Schutz im Filter
-- **Kein `onRecordAfterDeleteSuccess`-Hook vorhanden:** Beim Löschen einer `kw_booking_requests` wird der Kalender NICHT automatisch neu aufgebaut — verwaiste `"requested"`-Einträge bleiben stehen, bis die nächste Create/Update-Aktion einen Rebuild auslöst (oder man sie manuell leert)
+- **`onRecordAfterDeleteSuccess`-Hook vorhanden (30.07.2026):** Beim Löschen einer `kw_booking_requests` wird der Kalender neu aufgebaut (gleiche Inline-Logik wie Create/Update), damit keine verwaisten `"requested"`-Einträge bleiben
 
 ### PB_URL in Buchungsanfrage.dc.html zeigte fest auf Produktion — GELÖST
 - `PB_URL` war hartkodiert auf `https://kw.hofreither.at` (im Gegensatz zu Kühlwagen-Verwaltung.dc.html, die schon `window.location.origin` nutzte)
@@ -134,7 +134,7 @@ Andreas hatte parallel zu dieser Session im Claude Design Editor weitergearbeite
 - **IP:** 116.203.141.156
 - **Domain:** kw.hofreither.at (DNS korrekt gesetzt, SSL aktiv)
 - **Zugang:** Hetzner VNC Console (browser-basiert) oder SSH root@116.203.141.156
-- **Root-Passwort:** Kuehlwagen2026
+- **Root-Passwort:** nicht im Repo speichern (SSH-Key via `setup-ssh-key.ps1`). Falls früher ein Klartext-Passwort hier stand: **sofort rotieren** (wurde versioniert auf GitHub veröffentlicht).
 
 ### PocketBase Container
 - **Image:** ghcr.io/muchobien/pocketbase:latest
@@ -261,10 +261,15 @@ git checkout dev
 25. **Honeypot-Spam-Schutz** — verstecktes Feld auf Buchungsseite, Bots die es ausfüllen werden stillschweigend verworfen
 26. **Responsive CSS + Umgebungs-Badge** — mobile Breakpoints (`kw-g1`/`bq-g1`/`kw-tbl`/`kw-tr`), „LOKAL"/„SERVER"-Badge unten rechts je nach Hostname
 27. **Buchungsnummern-Schema geändert** — von `B-XXXX` auf `JAHR+4-stellig` (z.B. `20260001`), konfigurierbare Start-Nummer in Stammdaten
+28. **approveAnfrage abgesichert (30.07.2026)** — Konfliktcheck mit `parseD()`; Buchung erst nach erfolgreichem PB-Update; Fehler-Toast statt stiller Doppelbuchung
+29. **Kalender Delete-Hook** — `onRecordAfterDeleteSuccess` baut `kw_calendar` neu auf (keine verwaisten `requested`)
+30. **createRule `status=pending`** — öffentliche Creates dürfen keinen anderen Status setzen (Migration `1785400000_…`); Secrets aus CLAUDE.md entfernt
 
 ### Offene Aufgaben
 1. **Setup-Guide** für Git/Deploy erstellen
 2. **`uploads/mietbedingungen.pdf` fehlt** — die neue Mietbedingungen-Checkbox verlinkt auf eine Datei, die es noch nicht gibt → 404 beim Klick. PDF erstellen/hochladen und in `uploads/` (lokal + Server) ablegen, dann mit deployen
+3. **Server-Root-Passwort rotieren** — lag zeitweise klartext in CLAUDE.md / GitHub; SSH-Key nutzen, Klartext-Passwort ändern
+4. **createRule in Produktion prüfen** — falls Migration auf Coolify nicht auto-läuft: PB-Admin → `kw_booking_requests` → Create Rule = `@request.data.status = "pending"`
 
 ## Lokale Entwicklungsumgebung
 
@@ -285,8 +290,8 @@ Kein Autostart eingerichtet — muss nach jedem Neustart manuell gestartet werde
 Die App erkennt die PocketBase-URL automatisch über `window.location.origin` (kein `PB_URL`-Umschalter nötig) — Voraussetzung ist, dass sie aus dem `pb_public`-Ordner desselben PocketBase-Servers ausgeliefert wird.
 
 ### Zugangsdaten (nur lokal!)
-- Superuser `andreas@hofreither.at` — Passwort sollte identisch zu Prod sein, ist es aber laut Test nicht (siehe „Superuser-Passwort lokal ≠ Produktion" oben) — lokal frei wählbar, unabhängig von Produktion
-- Normale User (Login in der App): `andreas@hofreither.at`, `ulrike.gruber@valentinum.at`, `christa.pitschmann@valentinum.at` — alle mit Passwort `lokal1234`
+- Superuser `andreas@hofreither.at` — lokal frei wählbar, unabhängig von Produktion (siehe „Superuser-Passwort lokal ≠ Produktion" oben)
+- Normale User (Login in der App): `andreas@hofreither.at`, `ulrike.gruber@valentinum.at`, `christa.pitschmann@valentinum.at` — Passwörter nur lokal setzen, **nicht** ins Repo schreiben
 
 ### Bekannte Einschränkungen
 - **SMTP nicht konfiguriert** — E-Mail-Hooks (`pb_hooks/kw_anfragen.pb.js`) laufen zwar, aber es wird lokal keine echte Mail verschickt. Für Tests müsste in der lokalen PB-Admin-UI ein SMTP-Server (z.B. Mailtrap) hinterlegt werden.

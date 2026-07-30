@@ -250,6 +250,59 @@ onRecordAfterUpdateSuccess((e) => {
 }, "kw_booking_requests");
 
 
+// ─── Anfrage gelöscht → Kalender neu aufbauen (keine verwaisten "requested") ───
+onRecordAfterDeleteSuccess((e) => {
+  try {
+    let allReqs = [];
+    try { allReqs = $app.findAllRecords("kw_booking_requests"); } catch (ee) { allReqs = []; }
+    const seen = {};
+    const requested = [];
+    for (let i = 0; i < allReqs.length; i++) {
+      const rr = allReqs[i];
+      if (rr.getString("status") !== "pending") continue;
+      const f = rr.getString("from_date"), t = rr.getString("to_date");
+      if (!f || !t) continue;
+      const key = f + "_" + t;
+      if (seen[key]) continue;
+      seen[key] = true;
+      requested.push({ from: f, to: t, type: "requested" });
+    }
+    let calRec = null;
+    try {
+      const cals = $app.findRecordsByFilter("kw_calendar", "id != ''", "-updated", 1, 0);
+      calRec = (cals && cals.length > 0) ? cals[0] : null;
+    } catch (ee) {
+      try { const all = $app.findAllRecords("kw_calendar"); calRec = (all && all.length > 0) ? all[0] : null; } catch (e2) { calRec = null; }
+    }
+    const booked = [];
+    if (calRec) {
+      let raw = calRec.get("data");
+      if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch (ee) { raw = []; } }
+      else if (Array.isArray(raw) && raw.length > 0 && typeof raw[0] === "number") {
+        try {
+          let s = "";
+          for (let k = 0; k < raw.length; k++) s += String.fromCharCode(raw[k]);
+          raw = JSON.parse(s);
+        } catch (ee) { raw = []; }
+      }
+      if (Array.isArray(raw)) { for (let j = 0; j < raw.length; j++) { const it = raw[j]; if (it && typeof it === "object" && (it.type || "booked") === "booked") booked.push(it); } }
+    }
+    const merged = booked.concat(requested);
+    if (calRec) {
+      calRec.set("data", merged);
+      $app.save(calRec);
+    } else {
+      const coll = $app.findCollectionByNameOrId("kw_calendar");
+      const newRec = new Record(coll);
+      newRec.set("data", merged);
+      $app.save(newRec);
+    }
+  } catch (err) {
+    try { $app.logger().error("kw_calendar rebuild (delete): " + String(err)); } catch (ignore) {}
+  }
+}, "kw_booking_requests");
+
+
 // ─── Buchung bestätigt → Bestätigungsmail an Kunden ─────────────────────────
 // Wird ausgelöst wenn in der Verwaltungs-App der Status auf "bestätigt" gesetzt wird
 onRecordAfterUpdateSuccess((e) => {
